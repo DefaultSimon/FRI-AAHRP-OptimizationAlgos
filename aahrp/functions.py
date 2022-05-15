@@ -1,7 +1,7 @@
 """
 This module contains implementations of various functions we want to find optimums for.
 """
-from math import pow, sin, sqrt
+from math import sin, sqrt
 
 
 # A sort of "container class" for Schaffer1's function and other values we need (such as the global optimum).
