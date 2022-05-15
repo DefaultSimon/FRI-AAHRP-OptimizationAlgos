@@ -250,3 +250,50 @@ class Expo(Function):
     @staticmethod
     def global_optimum() -> float:
         return -1
+
+
+class Modlangerman(Function):
+    """
+    Modlangerman, as implemented in globalOptTests.
+    See https://github.com/cran/globalOptTests/blob/master/src/objFun.c#L407
+    """
+    COEFFICIENTS: List[List[float]] = [
+        [9.681, 0.667, 4.783, 9.095, 3.517, 9.325, 6.544, 0.211, 5.122, 2.020],
+        [9.400, 2.041, 3.788, 7.931, 2.882, 2.672, 3.568, 1.284, 7.033, 7.374],
+        [8.025, 9.152, 5.114, 7.621, 4.564, 4.711, 2.996, 6.126, 0.734, 4.982],
+        [2.196, 0.415, 5.649, 6.979, 9.510, 9.166, 6.304, 6.054, 9.377, 1.426],
+        [8.074, 8.777, 3.467, 1.867, 6.708, 6.349, 4.534, 0.276, 7.633, 1.56],
+    ]
+    COEFFICIENTS2: List[float] = [0.806, 0.517, 0.1, 0.908, 0.965]
+
+    @staticmethod
+    def function(*args: float) -> float:
+        coef: List[List[float]] = Modlangerman.COEFFICIENTS
+        coef2: List[float] = Modlangerman.COEFFICIENTS2
+
+        func_sum: float = 0
+
+        for i in range(5):
+            dist: float = 0
+            for j in range(10):
+                dist += (args[j] - coef[i][j]) ** 2
+
+            func_sum -= coef2[i] * exp(-1 * dist / pi) * cos(pi * dist)
+
+        return func_sum
+
+    @staticmethod
+    def dimensions() -> int:
+        return 10
+
+    @staticmethod
+    def bounds_lower() -> List[float]:
+        return [0] * 10
+
+    @staticmethod
+    def bounds_upper() -> List[float]:
+        return [10] * 10
+
+    @staticmethod
+    def global_optimum() -> float:
+        return -0.9650
