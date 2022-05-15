@@ -223,3 +223,30 @@ class PriceTransistor(Function):
     @staticmethod
     def global_optimum() -> float:
         return 0
+
+
+class Expo(Function):
+    """
+    Expo, as implemented in globalOptTests.
+    See https://github.com/cran/globalOptTests/blob/master/src/objFun.c#L153
+    """
+    @staticmethod
+    def function(*args: float) -> float:
+        result: float = sum([args[j] ** 2 for j in range(10)])
+        return -1 * exp(-0.5 * result)
+
+    @staticmethod
+    def dimensions() -> int:
+        return 10
+
+    @staticmethod
+    def bounds_lower() -> List[float]:
+        return [-12] * 10
+
+    @staticmethod
+    def bounds_upper() -> List[float]:
+        return [10] * 10
+
+    @staticmethod
+    def global_optimum() -> float:
+        return -1
