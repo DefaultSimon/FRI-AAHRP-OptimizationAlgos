@@ -11,7 +11,7 @@ class Schaffer1:
     See https://github.com/cran/globalOptTests/blob/master/src/objFun.c#L621
     """
     @staticmethod
-    def func(x: float, y: float) -> float:
+    def function(x: float, y: float) -> float:
         num: float = sin(sqrt(x ** 2 + y ** 2)) ** 2 - 0.5
         den: float = (1 + 0.001 * (x ** 2 + y ** 2)) ** 2
         return 0.5 + num / den
