@@ -150,3 +150,76 @@ class Griewank(Function):
     def global_optimum() -> float:
         return 0
 
+
+class PriceTransistor(Function):
+    """
+    PriceTransistor, as implemented in globalOptTests.
+    See https://github.com/cran/globalOptTests/blob/master/src/objFun.c#L545
+    """
+    COEFFICIENTS: List[List[float]] = [
+        [0.485, 0.752, 0.869, 0.982],
+        [0.369, 1.254, 0.703, 1.455],
+        [5.2095, 10.0677, 22.9274, 20.2153],
+        [23.3037, 101.779, 111.461, 191.267],
+        [28.5132, 111.8467, 134.3884, 211.4823],
+    ]
+
+    @staticmethod
+    def function(*args: float) -> float:
+        coefs: List[List[float]] = PriceTransistor.COEFFICIENTS
+
+        sqr_sums: float = 0
+
+        for k in range(4):
+            alpha: float = \
+                (1 - args[0] * args[1]) \
+                * args[2] \
+                * (
+                    exp(
+                        args[4] * (
+                            coefs[0][k]
+                            - (0.001 * coefs[2][k] * args[6])
+                            - (0.001 * args[7] * coefs[4][k])
+                        )
+                    )
+                    - 1
+                ) \
+                - coefs[4][k] \
+                + (coefs[3][k] * args[1])
+
+            beta: float = \
+                (1 - args[0] * args[1]) \
+                * args[3] \
+                * (
+                    exp(
+                        args[5] * (
+                            coefs[0][k]
+                            - coefs[1][k]
+                            - (0.001 * coefs[2][k] * args[6])
+                            + (coefs[3][k] * 0.001 * args[8])
+                        )
+                    )
+                    - 1
+                ) \
+                - (coefs[4][k] * args[0]) \
+                + coefs[3][k]
+
+            sqr_sums += alpha ** 2 + beta ** 2
+
+        return (args[0] * args[2] - args[1] * args[3]) ** 2 + sqr_sums
+
+    @staticmethod
+    def dimensions() -> int:
+        return 9
+
+    @staticmethod
+    def bounds_lower() -> List[float]:
+        return [0] * 9
+
+    @staticmethod
+    def bounds_upper() -> List[float]:
+        return [10] * 9
+
+    @staticmethod
+    def global_optimum() -> float:
+        return 0
