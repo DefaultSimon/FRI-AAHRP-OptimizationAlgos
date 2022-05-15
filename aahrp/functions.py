@@ -3,7 +3,7 @@ This module contains implementations of various functions we want to find optimu
 """
 from abc import ABCMeta
 from typing import List
-from math import sin, sqrt, cos, pi
+from math import sin, sqrt, cos, pi, exp
 
 
 # A sort of "container class" for functions and other values we need (such as the global optimum).
@@ -12,7 +12,7 @@ class Function(metaclass=ABCMeta):
     Base class for all functions we want to find optimums for, useful for autocompletion.
     """
     @staticmethod
-    def function(*args) -> float:
+    def function(*args: float) -> float:
         raise NotImplementedError()
 
     @staticmethod
@@ -97,7 +97,7 @@ class Salomon(Function):
     See https://github.com/cran/globalOptTests/blob/master/src/objFun.c#L604
     """
     @staticmethod
-    def function(*args: List[float]) -> float:
+    def function(*args: float) -> float:
         fun_sum = sqrt(sum([args[i] ** 2 for i in range(5)]))
         return -1 * cos(2 * pi * fun_sum) + 0.1 * fun_sum + 1
 
@@ -124,9 +124,9 @@ class Griewank(Function):
     See https://github.com/cran/globalOptTests/blob/master/src/objFun.c#L180
     """
     @staticmethod
-    def function(*args: List[float]) -> float:
+    def function(*args: float) -> float:
         intermediate_sum: float = 0
-        product: float = 0
+        product: float = 1
 
         for i in range(10):
             intermediate_sum += args[i] ** 2
