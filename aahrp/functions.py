@@ -170,6 +170,9 @@ class PriceTransistor(Function):
 
         sqr_sums: float = 0
 
+        # TODO PriceTransistor.function(0.9, 0.45, 1, 2, 8, 8, 5, 1, 2) == 1.7881583721892765e-07
+        #   but global optimum is 0. Surely this is just float inaccuracy?
+
         for k in range(4):
             alpha: float = \
                 (1 - args[0] * args[1]) \
@@ -297,3 +300,58 @@ class Modlangerman(Function):
     @staticmethod
     def global_optimum() -> float:
         return -0.9650
+
+
+class EMichalewicz(Function):
+    """
+    EMichalewicz, as implemented in globalOptTests.
+    See https://github.com/cran/globalOptTests/blob/master/src/objFun.c#L120
+    """
+    @staticmethod
+    def function(*args: float) -> float:
+        cos_t: float = cos(pi / 6)
+        sin_t: float = sin(pi / 6)
+
+        # TODO EMichalewicz.function(2.683, 0.259, 2.074, 1.023, 1.720) == -4.685305462075563
+        #   but global optimum is -4.6877. Is this just float inaccuracy?
+
+        result_y: List[float] = [0] * 10
+        for j in range(0, 5 - 1, 2):
+            result_y[j] = args[j] * cos_t - args[j + 1] * sin_t
+            result_y[j + 1] = args[j] * sin_t + args[j + 1] * cos_t
+
+        result_y[4] = args[4]
+
+        func_sum: float = 0
+
+        for k in range(0, 5):
+            func_sum -= \
+                sin(result_y[k]) \
+                * (
+                    sin(
+                        (k + 1) * result_y[k] * result_y[k] / pi
+                    ) ** (2 * 10)
+                )
+
+        return func_sum
+
+    @staticmethod
+    def dimensions() -> int:
+        return 5
+
+    @staticmethod
+    def bounds_lower() -> List[float]:
+        return [0] * 5
+
+    @staticmethod
+    def bounds_upper() -> List[float]:
+        return [pi] * 5
+
+    @staticmethod
+    def global_optimum() -> float:
+        return -4.6877
+
+
+# TODO Shekelfox5
+
+# TODO Schwefel
