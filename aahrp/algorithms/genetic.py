@@ -20,6 +20,7 @@ def genetic_algorithm(
         max_generations: int,
         population_size: int = 50,
         parent_selection_count: int = 25,
+        parent_suboptimal_selection_probability: float = 0.05,
         crossover_probability: float = 0.9,
         mutation_probability: float = 0.05
 ) -> GeneticSolution:
@@ -33,8 +34,18 @@ def genetic_algorithm(
             num_parents: int,
     ) -> List[List[float]]:
         combined: List[Tuple[List[float], float]] = list(zip(parent_components, parent_scores))
-        combined_sorted: List[Tuple[List[float], float]] = sorted(combined, key=lambda p: p[1], reverse=True)
-        # TODO This currently selects the top num_parents, add a bit of randomization.
+        # Sorted in ascending order.
+        combined_sorted: List[Tuple[List[float], float]] = sorted(combined, key=lambda p: p[1])
+
+        selected_parents: List[List[float]] = []
+        for _ in range(parent_selection_count):
+            if random.random() < parent_suboptimal_selection_probability:
+                # Select a random parent instead of the remaining best one.
+                selected_parents.append(random.choice(combined)[0])
+            else:
+                # Select the current best parent and remove it from the pool.
+                selected_parents.append(combined_sorted.pop(0)[0])
+
         return [c[0] for c in combined_sorted[:num_parents]]
 
     def generate_child(parent_a: List[float], parent_b: List[float]) -> List[float]:
