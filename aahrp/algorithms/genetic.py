@@ -12,8 +12,8 @@ def genetic_algorithm(
         seed: float,
         max_generations: int,
         population_size: int = 50,
-        parent_selection_count: int = 25,
-        parent_suboptimal_selection_probability: float = 0.05,
+        parents_selected: int = 25,
+        random_parent_probability: float = 0.05,
         crossover_probability: float = 0.9,
         mutation_probability: float = 0.05
 ) -> float:
@@ -31,8 +31,8 @@ def genetic_algorithm(
         combined_sorted: List[Tuple[List[float], float]] = sorted(combined, key=lambda p: p[1])
 
         selected_parents: List[List[float]] = []
-        for _ in range(parent_selection_count):
-            if random.random() < parent_suboptimal_selection_probability:
+        for _ in range(parents_selected):
+            if random.random() < random_parent_probability:
                 # Select a random parent instead of the remaining best one.
                 selected_parents.append(random.choice(combined)[0])
             else:
@@ -87,7 +87,7 @@ def genetic_algorithm(
             best_score_value = score_value
 
         # Select parents and generate next generation using them (crossover).
-        parents: List[List[float]] = select_parents(current_population, population_scores, parent_selection_count)
+        parents: List[List[float]] = select_parents(current_population, population_scores, parents_selected)
 
         new_population: List[List[float]] = []
         for _ in range(population_size):
