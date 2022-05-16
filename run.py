@@ -104,8 +104,13 @@ def run_hill_climb_algorithm(
 # Main test functions
 ####
 def test_genetic(
-        num_runs_per_function: int = len(SEEDS),
-        max_generations_per_run: int = 100,
+        number_of_runs_per_function: int,
+        max_generations_per_run: int,
+        population_size: int,
+        parents_selected: int,
+        random_parent_probability: float,
+        crossover_probability: float,
+        mutation_probability: float,
 ):
     for index, function in enumerate(OBJECTIVE_FUNCTIONS):
         header: str = f"[{function.__name__} | {index + 1:2d} of {len(OBJECTIVE_FUNCTIONS):2d}]"
@@ -115,8 +120,13 @@ def test_genetic(
         with timer:
             best_result: float = run_genetic_algorithm(
                 function,
-                number_of_runs=num_runs_per_function,
+                number_of_runs=number_of_runs_per_function,
                 max_generations=max_generations_per_run,
+                population_size=population_size,
+                parents_selected=parents_selected,
+                random_parent_probability=random_parent_probability,
+                crossover_probability=crossover_probability,
+                mutation_probability=mutation_probability,
             )
 
         print(f"{header} Time to best solution: {round(timer.get_delta(), 2)} seconds.")
@@ -147,22 +157,50 @@ def test_hill_climb(num_runs_per_function: int = len(SEEDS)):
 # Main
 ####
 def main():
+    ## Genetic
     print(f"{'=' * 6} GENETIC {'=' * 6}")
 
-    GENETIC_GENERATIONS_PER_RUN = 1000
+    GENETIC_NUMBER_OF_RUNS: int = len(SEEDS)
+    GENETIC_MAX_GENERATIONS: int = 2500
+    GENETIC_POPULATION_SIZE: int = 250
+    GENETIC_PARENTS_FOR_NEW_GENERATION: int = 25
+    GENETIC_PARENT_RANDOM_SELECTION_PROBABILITY: float = 0.015
+    GENETIC_CROSSOVER_PROBABILITY: float = 0.9
+    GENETIC_MUTATION_PROBABILITY: float = 0.015
 
-    print(f"Running genetic algorithm over {len(OBJECTIVE_FUNCTIONS)} functions "
-          f"({GENETIC_GENERATIONS_PER_RUN} generations per run).")
+    print(f"Running genetic algorithm over {len(OBJECTIVE_FUNCTIONS)} functions ...\n"
+          f"\tNumber of runs: {GENETIC_NUMBER_OF_RUNS}\n"
+          f"\tSimulated generations: {GENETIC_MAX_GENERATIONS}\n"
+          f"\tPopulation size: {GENETIC_POPULATION_SIZE}\n"
+          f"\tNumber of parents for next generation: {GENETIC_PARENTS_FOR_NEW_GENERATION}\n"
+          f"\tParent random selection probability: {GENETIC_PARENT_RANDOM_SELECTION_PROBABILITY}\n"
+          f"\tCrossover probability: {GENETIC_CROSSOVER_PROBABILITY}\n"
+          f"\tMutation probability: {GENETIC_MUTATION_PROBABILITY}")
     print()
-    test_genetic(max_generations_per_run=GENETIC_GENERATIONS_PER_RUN)
+    
+    test_genetic(
+        number_of_runs_per_function=GENETIC_NUMBER_OF_RUNS,
+        max_generations_per_run=GENETIC_MAX_GENERATIONS,
+        population_size=GENETIC_POPULATION_SIZE,
+        parents_selected=GENETIC_PARENTS_FOR_NEW_GENERATION,
+        random_parent_probability=GENETIC_PARENT_RANDOM_SELECTION_PROBABILITY,
+        crossover_probability=GENETIC_CROSSOVER_PROBABILITY,
+        mutation_probability=GENETIC_MUTATION_PROBABILITY,
+    )
 
     print(f"{'=' * 6}")
 
-    # Hill climbing
+    print()
+    print()
+
+    ## Hill climbing
     print(f"{'=' * 6} HILL CLIMBING {'=' * 6}")
+
     print(f"Running hill climb algorithm over {len(OBJECTIVE_FUNCTIONS)} functions")
     print()
+
     test_hill_climb()
+
     print(f"{'=' * 6}")
 
 
