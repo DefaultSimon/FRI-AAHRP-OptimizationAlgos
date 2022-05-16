@@ -1,14 +1,7 @@
-from dataclasses import dataclass
 from random import Random
 from typing import List, Callable, Tuple
 
 from aahrp.utilities import select_random_point
-
-
-@dataclass
-class GeneticSolution:
-    best_value: float
-    best_solution: List[float]
 
 
 def genetic_algorithm(
@@ -23,7 +16,7 @@ def genetic_algorithm(
         parent_suboptimal_selection_probability: float = 0.05,
         crossover_probability: float = 0.9,
         mutation_probability: float = 0.05
-) -> GeneticSolution:
+) -> float:
     # Independent random generator seeded with the seed parameter.
     random: Random = Random(seed)
 
@@ -79,7 +72,6 @@ def genetic_algorithm(
     ]
 
     best_score_value: float = function(*current_population[0])
-    best_score_candidate: List[float] = current_population[0]
 
     for generation_index in range(max_generations):
         # Calculate values of each individual in current population.
@@ -93,7 +85,6 @@ def genetic_algorithm(
 
         if score_value < best_score_value:
             best_score_value = score_value
-            best_score_candidate = score_candidate
 
         # Select parents and generate next generation using them (crossover).
         parents: List[List[float]] = select_parents(current_population, population_scores, parent_selection_count)
@@ -108,9 +99,5 @@ def genetic_algorithm(
 
         current_population = new_population
 
-    return GeneticSolution(
-        best_value=best_score_value,
-        best_solution=best_score_candidate
-    )
-
+    return best_score_value
 

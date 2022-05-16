@@ -2,14 +2,13 @@ from typing import List, Type
 
 from aahrp.functions import \
     Function, Schaffer1, Schaffer2, Salomon, Griewank, PriceTransistor, \
-    Expo, Modlangerman, EMichalewicz
-from aahrp.algorithms.genetic import genetic_algorithm, GeneticSolution
+    Expo, Modlangerman, EMichalewicz, Shekelfox5, Schwefel
+from aahrp.algorithms.genetic import genetic_algorithm
 from aahrp.timer import Timer
 
 OBJECTIVE_FUNCTIONS: List[Type[Function]] = [
     Schaffer1, Schaffer2, Salomon, Griewank, PriceTransistor,
-    Expo, Modlangerman, EMichalewicz,
-    # TODO Add remaining functions.
+    Expo, Modlangerman, EMichalewicz, Shekelfox5, Schwefel
 ]
 
 # Ten seeds for now.
@@ -25,7 +24,7 @@ def run_genetic_algorithm(
 ) -> float:
     solutions: List[float] = []
     for run_index in range(num_runs):
-        result: GeneticSolution = genetic_algorithm(
+        result: float = genetic_algorithm(
             function=function.function,
             dimensions=function.dimensions(),
             bounds_lower=function.bounds_lower(),
@@ -39,7 +38,7 @@ def run_genetic_algorithm(
             mutation_probability=0.05,
         )
 
-        solutions.append(result.best_value)
+        solutions.append(result)
 
     return min(solutions)
 
@@ -51,7 +50,7 @@ def test_genetic(
         max_generations_per_run: int = 100,
 ):
     for index, function in enumerate(OBJECTIVE_FUNCTIONS):
-        header: str = f"[{function.__name__:14s}|{index + 1:2d}/{len(OBJECTIVE_FUNCTIONS):2d}]"
+        header: str = f"[{function.__name__} | {index + 1:2d} of {len(OBJECTIVE_FUNCTIONS):2d}]"
         print(f"{header} Testing ...")
 
         timer: Timer = Timer()
