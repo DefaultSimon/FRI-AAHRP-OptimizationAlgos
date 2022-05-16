@@ -21,7 +21,7 @@ def hill_climbing_algorithm(
         random = Random(seed)
 
     min_node = select_random_point(dimensions, bounds_lower, bounds_upper, random)
-    min_val = function(min_node)
+    min_val = function(*min_node)
 
     for i in range(max_iterations):
         neighbors = get_neighbors(min_node, bounds_lower, bounds_upper, step)
@@ -30,9 +30,9 @@ def hill_climbing_algorithm(
         next_val: float = min_val
 
         for neighbor in neighbors:
-            if function(neighbor) > next_val:
+            if function(*neighbor) > next_val:
                 next_node = neighbor
-                next_val = function(neighbor)
+                next_val = function(*neighbor)
 
         if next_val > min_val:
             min_node = next_node

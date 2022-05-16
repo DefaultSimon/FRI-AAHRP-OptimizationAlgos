@@ -196,7 +196,7 @@ def main():
     ## Hill climbing
     print(f"{'=' * 6} HILL CLIMBING {'=' * 6}")
 
-    print(f"Running hill climb algorithm over {len(OBJECTIVE_FUNCTIONS)} functions")
+    print(f"Running hill climb algorithm over {len(OBJECTIVE_FUNCTIONS)} functions ...")
     print()
 
     test_hill_climb()
