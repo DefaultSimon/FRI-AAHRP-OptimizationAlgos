@@ -20,6 +20,7 @@ def genetic_algorithm(
         max_generations: int,
         population_size: int = 50,
         parent_selection_count: int = 25,
+        crossover_probability: float = 0.9,
         mutation_probability: float = 0.05
 ) -> GeneticSolution:
     # Independent random generator seeded with the seed parameter.
@@ -37,11 +38,23 @@ def genetic_algorithm(
         return [c[0] for c in combined_sorted[:num_parents]]
 
     def generate_child(parent_a: List[float], parent_b: List[float]) -> List[float]:
-        # 1. Perform crossover.
-        crossover_index: int = random.randint(1, len(parent_b) - 2)
-        child_values: List[float] = parent_a[:crossover_index] + parent_b[crossover_index:]
+        # 1. Perform crossover with probability.
+        child_values: List[float]
 
-        # 2. Perform random mutation.
+        if random.random() < crossover_probability:
+            # Perform crossover!
+            crossover_index: int
+            if dimensions == 2:
+                crossover_index = 1
+            else:
+                crossover_index = random.randint(1, len(parent_b) - 2)
+
+            child_values = parent_a[:crossover_index] + parent_b[crossover_index:]
+        else:
+            # Pick one of the parents to descend to the next generation.
+            child_values = random.choice((parent_a, parent_b))
+
+        # 2. Perform mutation with probability.
         for index in range(len(child_values)):
             if random.random() < mutation_probability:
                 # Mutation occurs: value at index is mutated.
@@ -62,8 +75,10 @@ def genetic_algorithm(
         population_scores: List[float] = [function(*values) for values in current_population]
 
         # Update the best score if a better one has been found.
-        score_value: float = min(population_scores)
-        score_candidate: List[float] = current_population[population_scores.index(best_score_value)]
+        score_value, score_candidate = min(
+            zip(population_scores, current_population),
+            key=lambda z: z[0]
+        )
 
         if score_value < best_score_value:
             best_score_value = score_value
