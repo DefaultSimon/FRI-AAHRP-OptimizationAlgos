@@ -4,6 +4,7 @@ from aahrp.functions import \
     Function, Schaffer1, Schaffer2, Salomon, Griewank, PriceTransistor, \
     Expo, Modlangerman, EMichalewicz, Shekelfox5, Schwefel
 from aahrp.algorithms.genetic import genetic_algorithm
+from aahrp.algorithms.hillclimb import hill_climbing_algorithm
 from aahrp.timer import Timer
 
 OBJECTIVE_FUNCTIONS: List[Type[Function]] = [
@@ -79,6 +80,26 @@ def run_genetic_algorithm(
     return min(solutions)
 
 
+def run_hill_climb_algorithm(
+        function: Type[Function],
+        num_runs: int = 1
+) -> float:
+    solutions: List[float] = []
+
+    for run_index in range(num_runs):
+        result: float = hill_climbing_algorithm(
+            function=function.function,
+            dimensions=function.dimensions(),
+            bounds_lower=function.bounds_lower(),
+            bounds_upper=function.bounds_upper(),
+            seed=SEEDS[run_index]
+        )
+
+        solutions.append(result)
+
+    return min(solutions)
+
+
 ####
 # Main test functions
 ####
@@ -100,6 +121,25 @@ def test_genetic(
 
         print(f"{header} Time to best solution: {round(timer.get_delta(), 2)} seconds.")
         print(f"{header} Best solution: {best_result}")
+        print(f"{header} Optimal solution: {function.global_optimum()}")
+        print()
+
+
+def test_hill_climb(num_runs_per_function: int = len(SEEDS)):
+    for index, function in enumerate(OBJECTIVE_FUNCTIONS):
+        header: str = f"[{function.__name__} | {index + 1:2d} of {len(OBJECTIVE_FUNCTIONS):2d}]"
+        print(f"{header} Running hill climb algorithm ...")
+
+        timer: Timer = Timer()
+        with timer:
+            best_result: float = run_hill_climb_algorithm(
+                function,
+                num_runs=num_runs_per_function,
+            )
+
+        print(f"{header} Time to best solution: {round(timer.get_delta(), 2)} seconds.")
+        print(f"{header} Best solution: {best_result}")
+        print(f"{header} Optimal solution: {function.global_optimum()}")
         print()
 
 
@@ -116,6 +156,13 @@ def main():
     print()
     test_genetic(max_generations_per_run=GENETIC_GENERATIONS_PER_RUN)
 
+    print(f"{'=' * 6}")
+
+    # Hill climbing
+    print(f"{'=' * 6} HILL CLIMBING {'=' * 6}")
+    print(f"Running hill climb algorithm over {len(OBJECTIVE_FUNCTIONS)} functions")
+    print()
+    test_hill_climb()
     print(f"{'=' * 6}")
 
 

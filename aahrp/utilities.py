@@ -1,5 +1,6 @@
 from random import Random
 from typing import List
+from itertools import product
 
 
 def select_random_point(
@@ -22,3 +23,35 @@ def select_random_point(
         random.uniform(bounds_lower[index], bounds_upper[index])
         for index in range(dimensions)
     ]
+
+
+def get_neighbors(
+        point: List[float],
+        bounds_lower: List[float],
+        bounds_upper: List[float],
+        step: float = 0.1
+) -> List[List[float]]:
+    """
+    Return all neighbors of a point
+    :param point:
+    :param dimensions:
+    :param bounds_lower:
+    :param bounds_upper:
+    :param step:
+    :return:
+    """
+    offsets = list(product(*([-step, 0, step] for i in point)))
+    neighbors: List[List[float]] = []
+
+    for offset in offsets:
+        neighbor = []
+        for i in range(len(point)):
+            val = point[i] + offset[i]
+
+            if bounds_lower[i] <= val <= bounds_upper[i]:
+                neighbor.append(val)
+
+        if neighbor != point and len(neighbor) == len(point):
+            neighbors.append(neighbor)
+
+    return neighbors
