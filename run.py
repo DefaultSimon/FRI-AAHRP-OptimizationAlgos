@@ -1,5 +1,5 @@
 import multiprocessing
-from typing import List, Type, Tuple, Any
+from typing import List, Type, Tuple, Any, Dict, Callable
 
 from aahrp.functions import \
     Function, Schaffer1, Schaffer2, Salomon, Griewank, PriceTransistor, \
@@ -30,30 +30,25 @@ SEEDS: List[int] = [
 
 
 ####
-# Helpers for individual/combined runs
+# GENETIC ALGORITHM
 ####
-def run_genetic_algorithm(
-        function: Type[Function],
-        number_of_runs: int = len(SEEDS),
-        max_generations: int = 2500,
-        population_size: int = 250,
-        parents_selected: int = 25,
-        random_parent_probability: float = 0.015,
-        crossover_probability: float = 0.9,
-        mutation_probability: float = 0.015,
-        concurrency: int = multiprocessing.cpu_count()
-) -> float:
-    if number_of_runs > len(SEEDS):
-        raise KeyError(f"Not enough pre-generated seeds for {number_of_runs} runs, "
-                       f"generate some more at the top of the script.")
-
-    concurrency_arguments: List[Tuple[Any, ...]] = [
-        (
-            function.function,
-            function.dimensions(),
-            function.bounds_lower(),
-            function.bounds_upper(),
-            SEEDS[index],
+def make_genetic_params_fn(
+        f: Type[Function],
+        max_generations: int,
+        population_size: int,
+        parents_selected: int,
+        random_parent_probability: float,
+        crossover_probability: float,
+        mutation_probability: float,
+) -> Callable[[int], Tuple]:
+    # Complex, but kind of useful for this scenario.
+    def _inner(seed: int):
+        return (
+            f.function,
+            f.dimensions(),
+            f.bounds_lower(),
+            f.bounds_upper(),
+            seed,
             max_generations,
             population_size,
             parents_selected,
@@ -61,6 +56,55 @@ def run_genetic_algorithm(
             crossover_probability,
             mutation_probability
         )
+    return _inner
+
+# Because not every function can be optimized best the same way, we experimented and came up with
+# a set of genetic algorithm parameters optimized for each individual function.
+GENETIC_FUNCTION_TO_OPTIMIZED_PARAMETERS: Dict[Type[Function], Callable[[int], Tuple]] = {
+    Schaffer1: make_genetic_params_fn(Schaffer1, max_generations=2000,
+                                      population_size=250, parents_selected=25, random_parent_probability=0.015,
+                                      crossover_probability=0.3, mutation_probability=0.015),
+    Schaffer2: make_genetic_params_fn(Schaffer2, max_generations=2000,
+                                      population_size=250, parents_selected=25, random_parent_probability=0.015,
+                                      crossover_probability=0.3, mutation_probability=0.015),
+    Salomon: make_genetic_params_fn(Salomon, max_generations=2000,
+                                    population_size=250, parents_selected=25, random_parent_probability=0.015,
+                                    crossover_probability=0.3, mutation_probability=0.015),
+    Griewank: make_genetic_params_fn(Griewank, max_generations=2000,
+                                     population_size=250, parents_selected=25, random_parent_probability=0.015,
+                                     crossover_probability=0.3, mutation_probability=0.015),
+    PriceTransistor: make_genetic_params_fn(PriceTransistor, max_generations=2000,
+                                            population_size=250, parents_selected=25, random_parent_probability=0.015,
+                                            crossover_probability=0.3, mutation_probability=0.015),
+    Expo: make_genetic_params_fn(Expo, max_generations=2000,
+                                 population_size=250, parents_selected=25, random_parent_probability=0.015,
+                                 crossover_probability=0.3, mutation_probability=0.015),
+    Modlangerman: make_genetic_params_fn(Modlangerman, max_generations=2000,
+                                         population_size=250, parents_selected=25, random_parent_probability=0.015,
+                                         crossover_probability=0.3, mutation_probability=0.015),
+    EMichalewicz: make_genetic_params_fn(EMichalewicz, max_generations=2000,
+                                         population_size=250, parents_selected=25, random_parent_probability=0.015,
+                                         crossover_probability=0.3, mutation_probability=0.015),
+    Shekelfox5: make_genetic_params_fn(Shekelfox5, max_generations=2000,
+                                       population_size=250, parents_selected=25, random_parent_probability=0.015,
+                                       crossover_probability=0.3, mutation_probability=0.015),
+    Schwefel: make_genetic_params_fn(Schwefel, max_generations=2000,
+                                     population_size=250, parents_selected=25, random_parent_probability=0.015,
+                                     crossover_probability=0.3, mutation_probability=0.015),
+}
+
+def run_genetic_algorithm(
+        function: Type[Function],
+        number_of_runs: int = len(SEEDS),
+        concurrency: int = multiprocessing.cpu_count()
+) -> float:
+    if number_of_runs > len(SEEDS):
+        raise KeyError(f"Not enough pre-generated seeds for {number_of_runs} runs, "
+                       f"generate some more at the top of the script.")
+
+    concurrency: int = min(concurrency, number_of_runs)
+    concurrency_arguments: List[Tuple[Any, ...]] = [
+        GENETIC_FUNCTION_TO_OPTIMIZED_PARAMETERS[function](SEEDS[index])
         for index in range(number_of_runs)
     ]
 
@@ -74,6 +118,9 @@ def run_genetic_algorithm(
     return min(solutions)
 
 
+####
+# HILL CLIMB ALGORITHM
+####
 def run_hill_climb_algorithm(
         function: Type[Function],
         num_runs: int = 1
@@ -95,20 +142,14 @@ def run_hill_climb_algorithm(
 
 
 ####
-# Main test functions
+# MAIN TEST FUNCTIONS
 ####
 def test_genetic(
         number_of_runs_per_function: int,
-        max_generations_per_run: int,
-        population_size: int,
-        parents_selected: int,
-        random_parent_probability: float,
-        crossover_probability: float,
-        mutation_probability: float,
         concurrency: int,
 ):
     for index, function in enumerate(OBJECTIVE_FUNCTIONS):
-        header: str = f"[{function.__name__} | {index + 1:2d} of {len(OBJECTIVE_FUNCTIONS):2d}]"
+        header: str = f"[{function.__name__.ljust(15)}|{index + 1:2d} of {len(OBJECTIVE_FUNCTIONS):2d}]"
         print(f"{header} Running genetic algorithm ...")
 
         timer: Timer = Timer()
@@ -116,12 +157,6 @@ def test_genetic(
             best_result: float = run_genetic_algorithm(
                 function,
                 number_of_runs=number_of_runs_per_function,
-                max_generations=max_generations_per_run,
-                population_size=population_size,
-                parents_selected=parents_selected,
-                random_parent_probability=random_parent_probability,
-                crossover_probability=crossover_probability,
-                mutation_probability=mutation_probability,
                 concurrency=concurrency,
             )
 
@@ -157,34 +192,13 @@ def main():
 
     ## Genetic
     print(f"{'=' * 6} GENETIC {'=' * 6}")
-
     GENETIC_NUMBER_OF_RUNS: int = len(SEEDS)
-    GENETIC_MAX_GENERATIONS: int = 2000
-    GENETIC_POPULATION_SIZE: int = 250
-    GENETIC_PARENTS_FOR_NEW_GENERATION: int = 25
-    GENETIC_PARENT_RANDOM_SELECTION_PROBABILITY: float = 0.015
-    GENETIC_CROSSOVER_PROBABILITY: float = 0.9
-    GENETIC_MUTATION_PROBABILITY: float = 0.015
 
-    print(f"Running genetic algorithm over {len(OBJECTIVE_FUNCTIONS)} functions ...\n"
-          f"\tConcurrency: {CPU_CORES}\n"
-          f"\tNumber of runs: {GENETIC_NUMBER_OF_RUNS}\n"
-          f"\tSimulated generations: {GENETIC_MAX_GENERATIONS}\n"
-          f"\tPopulation size: {GENETIC_POPULATION_SIZE}\n"
-          f"\tNumber of parents for next generation: {GENETIC_PARENTS_FOR_NEW_GENERATION}\n"
-          f"\tParent random selection probability: {GENETIC_PARENT_RANDOM_SELECTION_PROBABILITY}\n"
-          f"\tCrossover probability: {GENETIC_CROSSOVER_PROBABILITY}\n"
-          f"\tMutation probability: {GENETIC_MUTATION_PROBABILITY}")
+    print(f"Running genetic algorithm over {len(OBJECTIVE_FUNCTIONS)} functions ...")
     print()
     
     test_genetic(
         number_of_runs_per_function=GENETIC_NUMBER_OF_RUNS,
-        max_generations_per_run=GENETIC_MAX_GENERATIONS,
-        population_size=GENETIC_POPULATION_SIZE,
-        parents_selected=GENETIC_PARENTS_FOR_NEW_GENERATION,
-        random_parent_probability=GENETIC_PARENT_RANDOM_SELECTION_PROBABILITY,
-        crossover_probability=GENETIC_CROSSOVER_PROBABILITY,
-        mutation_probability=GENETIC_MUTATION_PROBABILITY,
         concurrency=CPU_CORES,
     )
 
