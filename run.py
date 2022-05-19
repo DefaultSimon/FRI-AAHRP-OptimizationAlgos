@@ -1,4 +1,5 @@
-from typing import List, Type
+import multiprocessing
+from typing import List, Type, Tuple, Any
 
 from aahrp.functions import \
     Function, Schaffer1, Schaffer2, Salomon, Griewank, PriceTransistor, \
@@ -6,6 +7,7 @@ from aahrp.functions import \
 from aahrp.algorithms.genetic import genetic_algorithm
 from aahrp.algorithms.hillclimb import hill_climbing_algorithm
 from aahrp.timer import Timer
+from aahrp.parallelization import run_concurrently
 
 OBJECTIVE_FUNCTIONS: List[Type[Function]] = [
     Schaffer1, Schaffer2, Salomon, Griewank, PriceTransistor,
@@ -39,29 +41,35 @@ def run_genetic_algorithm(
         random_parent_probability: float = 0.015,
         crossover_probability: float = 0.9,
         mutation_probability: float = 0.015,
+        concurrency: int = multiprocessing.cpu_count()
 ) -> float:
     if number_of_runs > len(SEEDS):
         raise KeyError(f"Not enough pre-generated seeds for {number_of_runs} runs, "
                        f"generate some more at the top of the script.")
 
-    solutions: List[float] = []
-
-    for run_index in range(number_of_runs):
-        result: float = genetic_algorithm(
-            function=function.function,
-            dimensions=function.dimensions(),
-            bounds_lower=function.bounds_lower(),
-            bounds_upper=function.bounds_upper(),
-            seed=SEEDS[run_index],
-            max_generations=max_generations,
-            population_size=population_size,
-            parents_selected=parents_selected,
-            random_parent_probability=random_parent_probability,
-            crossover_probability=crossover_probability,
-            mutation_probability=mutation_probability,
+    concurrency_arguments: List[Tuple[Any, ...]] = [
+        (
+            function.function,
+            function.dimensions(),
+            function.bounds_lower(),
+            function.bounds_upper(),
+            SEEDS[index],
+            max_generations,
+            population_size,
+            parents_selected,
+            random_parent_probability,
+            crossover_probability,
+            mutation_probability
         )
+        for index in range(number_of_runs)
+    ]
 
-        solutions.append(result)
+    solutions: List[float] = run_concurrently(
+        function=genetic_algorithm,
+        list_of_argument_tuples=concurrency_arguments,
+        concurrency=concurrency,
+        chunk_size=2
+    )
 
     return min(solutions)
 
@@ -97,6 +105,7 @@ def test_genetic(
         random_parent_probability: float,
         crossover_probability: float,
         mutation_probability: float,
+        concurrency: int,
 ):
     for index, function in enumerate(OBJECTIVE_FUNCTIONS):
         header: str = f"[{function.__name__} | {index + 1:2d} of {len(OBJECTIVE_FUNCTIONS):2d}]"
@@ -113,6 +122,7 @@ def test_genetic(
                 random_parent_probability=random_parent_probability,
                 crossover_probability=crossover_probability,
                 mutation_probability=mutation_probability,
+                concurrency=concurrency,
             )
 
         print(f"{header} Time to best solution: {round(timer.get_delta(), 2)} seconds.")
@@ -143,6 +153,8 @@ def test_hill_climb(num_runs_per_function: int = len(SEEDS)):
 # Main
 ####
 def main():
+    CPU_CORES: int = multiprocessing.cpu_count()
+
     ## Genetic
     print(f"{'=' * 6} GENETIC {'=' * 6}")
 
@@ -155,6 +167,7 @@ def main():
     GENETIC_MUTATION_PROBABILITY: float = 0.015
 
     print(f"Running genetic algorithm over {len(OBJECTIVE_FUNCTIONS)} functions ...\n"
+          f"\tConcurrency: {CPU_CORES}\n"
           f"\tNumber of runs: {GENETIC_NUMBER_OF_RUNS}\n"
           f"\tSimulated generations: {GENETIC_MAX_GENERATIONS}\n"
           f"\tPopulation size: {GENETIC_POPULATION_SIZE}\n"
@@ -172,6 +185,7 @@ def main():
         random_parent_probability=GENETIC_PARENT_RANDOM_SELECTION_PROBABILITY,
         crossover_probability=GENETIC_CROSSOVER_PROBABILITY,
         mutation_probability=GENETIC_MUTATION_PROBABILITY,
+        concurrency=CPU_CORES,
     )
 
     print(f"{'=' * 6}")
