@@ -30,11 +30,11 @@ def hill_climbing_algorithm(
         next_val: float = min_val
 
         for neighbor in neighbors:
-            if function(*neighbor) > next_val:
+            if function(*neighbor) < next_val:
                 next_node = neighbor
                 next_val = function(*neighbor)
 
-        if next_val > min_val:
+        if next_val < min_val:
             min_node = next_node
             min_val = next_val
         else:
