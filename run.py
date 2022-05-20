@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 import argparse
 import multiprocessing
 from typing import List, Type, Tuple, Any, Dict, Callable
