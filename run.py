@@ -126,20 +126,27 @@ def run_genetic_algorithm(
 ####
 def run_hill_climb_algorithm(
         function: Type[Function],
-        num_runs: int = 1
+        num_runs: int = 1,
+        concurrency: int = multiprocessing.cpu_count()
 ) -> float:
-    solutions: List[float] = []
-
-    for run_index in range(num_runs):
-        result: float = hill_climbing_algorithm(
-            function=function.function,
-            dimensions=function.dimensions(),
-            bounds_lower=function.bounds_lower(),
-            bounds_upper=function.bounds_upper(),
-            seed=SEEDS[run_index]
+    concurrency_arguments: List[Tuple[Any, ...]] = [
+        (
+            function.function,
+            function.dimensions(),
+            function.bounds_lower(),
+            function.bounds_upper(),
+            SEEDS[index],
+            1
         )
+        for index in range(num_runs)
+    ]
 
-        solutions.append(result)
+    solutions: List[float] = run_concurrently(
+        function=hill_climbing_algorithm,
+        list_of_argument_tuples=concurrency_arguments,
+        concurrency=concurrency,
+        chunk_size=2
+    )
 
     return min(solutions)
 
@@ -170,7 +177,10 @@ def test_genetic(
         print()
 
 
-def test_hill_climb(num_runs_per_function: int = len(SEEDS)):
+def test_hill_climb(
+        num_runs_per_function: int = len(SEEDS),
+        concurrency: int = multiprocessing.cpu_count()
+):
     for index, function in enumerate(OBJECTIVE_FUNCTIONS):
         header: str = f"[{function.__name__} | {index + 1:2d} of {len(OBJECTIVE_FUNCTIONS):2d}]"
         print(f"{header} Running hill climb algorithm ...")
@@ -180,11 +190,13 @@ def test_hill_climb(num_runs_per_function: int = len(SEEDS)):
             best_result: float = run_hill_climb_algorithm(
                 function,
                 num_runs=num_runs_per_function,
+                concurrency=concurrency
             )
 
         print(f"{header} Time to best solution: {round(timer.get_delta(), 2)} seconds.")
         print(f"{header} Best solution: {best_result}")
         print(f"{header} Optimal solution: {function.global_optimum()}")
+        print(f"{header} Distance: {best_result - function.global_optimum()}")
         print()
 
 
@@ -214,18 +226,18 @@ def main():
 
     CPU_CORES: int = args.core_num
     ALGORITHM: str = args.algorithm.lower()
+    NUMBER_OF_RUNS: int = len(SEEDS)
 
 
     if ALGORITHM == "genetic":
         ## Genetic
         print(f"{'=' * 6} GENETIC {'=' * 6}")
-        GENETIC_NUMBER_OF_RUNS: int = len(SEEDS)
 
         print(f"Running genetic algorithm over {len(OBJECTIVE_FUNCTIONS)} functions ...")
         print()
 
         test_genetic(
-            number_of_runs_per_function=GENETIC_NUMBER_OF_RUNS,
+            number_of_runs_per_function=NUMBER_OF_RUNS,
             concurrency=CPU_CORES,
         )
 
@@ -239,7 +251,10 @@ def main():
         print(f"Running hill climb algorithm over {len(OBJECTIVE_FUNCTIONS)} functions ...")
         print()
 
-        test_hill_climb()
+        test_hill_climb(
+            num_runs_per_function=NUMBER_OF_RUNS,
+            concurrency=CPU_CORES
+        )
 
         print(f"{'=' * 6}")
         print()
