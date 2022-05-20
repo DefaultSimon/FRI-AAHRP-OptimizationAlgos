@@ -65,32 +65,32 @@ GENETIC_FUNCTION_TO_OPTIMIZED_PARAMETERS: Dict[Type[Function], Callable[[int], T
                                       population_size=250, parents_selected=25, random_parent_probability=0.015,
                                       crossover_probability=0.3, mutation_probability=0.015),
     Schaffer2: make_genetic_params_fn(Schaffer2, max_generations=2000,
-                                      population_size=250, parents_selected=25, random_parent_probability=0.015,
-                                      crossover_probability=0.3, mutation_probability=0.015),
+                                      population_size=1000, parents_selected=10, random_parent_probability=0.015,
+                                      crossover_probability=0.35, mutation_probability=0.015),
     Salomon: make_genetic_params_fn(Salomon, max_generations=2000,
-                                    population_size=250, parents_selected=25, random_parent_probability=0.015,
-                                    crossover_probability=0.3, mutation_probability=0.015),
+                                    population_size=500, parents_selected=10, random_parent_probability=0.015,
+                                    crossover_probability=0.55, mutation_probability=0.015),
     Griewank: make_genetic_params_fn(Griewank, max_generations=2000,
-                                     population_size=250, parents_selected=25, random_parent_probability=0.015,
-                                     crossover_probability=0.3, mutation_probability=0.015),
+                                     population_size=1000, parents_selected=10, random_parent_probability=0.015,
+                                     crossover_probability=0.9, mutation_probability=0.015),
     PriceTransistor: make_genetic_params_fn(PriceTransistor, max_generations=2000,
-                                            population_size=250, parents_selected=25, random_parent_probability=0.015,
-                                            crossover_probability=0.3, mutation_probability=0.015),
+                                            population_size=1000, parents_selected=10, random_parent_probability=0.015,
+                                            crossover_probability=0.75, mutation_probability=0.015),
     Expo: make_genetic_params_fn(Expo, max_generations=2000,
-                                 population_size=250, parents_selected=25, random_parent_probability=0.015,
-                                 crossover_probability=0.3, mutation_probability=0.015),
+                                 population_size=1000, parents_selected=10, random_parent_probability=0.015,
+                                 crossover_probability=0.8, mutation_probability=0.015),
     Modlangerman: make_genetic_params_fn(Modlangerman, max_generations=2000,
-                                         population_size=250, parents_selected=25, random_parent_probability=0.015,
-                                         crossover_probability=0.3, mutation_probability=0.015),
+                                         population_size=1000, parents_selected=20, random_parent_probability=0.015,
+                                         crossover_probability=0.7, mutation_probability=0.015),
     EMichalewicz: make_genetic_params_fn(EMichalewicz, max_generations=2000,
-                                         population_size=250, parents_selected=25, random_parent_probability=0.015,
-                                         crossover_probability=0.3, mutation_probability=0.015),
+                                         population_size=1000, parents_selected=10, random_parent_probability=0.015,
+                                         crossover_probability=0.8, mutation_probability=0.015),
     Shekelfox5: make_genetic_params_fn(Shekelfox5, max_generations=2000,
-                                       population_size=250, parents_selected=25, random_parent_probability=0.015,
-                                       crossover_probability=0.3, mutation_probability=0.015),
+                                       population_size=1000, parents_selected=20, random_parent_probability=0.015,
+                                       crossover_probability=0.8, mutation_probability=0.015),
     Schwefel: make_genetic_params_fn(Schwefel, max_generations=2000,
-                                     population_size=250, parents_selected=25, random_parent_probability=0.015,
-                                     crossover_probability=0.3, mutation_probability=0.015),
+                                     population_size=1000, parents_selected=5, random_parent_probability=0.015,
+                                     crossover_probability=0.65, mutation_probability=0.015),
 }
 
 def run_genetic_algorithm(
@@ -163,6 +163,7 @@ def test_genetic(
         print(f"{header} Time to best solution: {round(timer.get_delta(), 2)} seconds.")
         print(f"{header} Best solution: {best_result}")
         print(f"{header} Optimal solution: {function.global_optimum()}")
+        print(f"{header} Distance: {best_result - function.global_optimum()}")
         print()
 
 
@@ -196,7 +197,7 @@ def main():
 
     print(f"Running genetic algorithm over {len(OBJECTIVE_FUNCTIONS)} functions ...")
     print()
-    
+
     test_genetic(
         number_of_runs_per_function=GENETIC_NUMBER_OF_RUNS,
         concurrency=CPU_CORES,
