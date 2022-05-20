@@ -1,3 +1,4 @@
+import argparse
 import multiprocessing
 from typing import List, Type, Tuple, Any, Dict, Callable
 
@@ -189,34 +190,57 @@ def test_hill_climb(num_runs_per_function: int = len(SEEDS)):
 # Main
 ####
 def main():
-    CPU_CORES: int = multiprocessing.cpu_count()
-
-    ## Genetic
-    print(f"{'=' * 6} GENETIC {'=' * 6}")
-    GENETIC_NUMBER_OF_RUNS: int = len(SEEDS)
-
-    print(f"Running genetic algorithm over {len(OBJECTIVE_FUNCTIONS)} functions ...")
-    print()
-
-    test_genetic(
-        number_of_runs_per_function=GENETIC_NUMBER_OF_RUNS,
-        concurrency=CPU_CORES,
+    function_list: str = ", ".join([f.__name__ for f in OBJECTIVE_FUNCTIONS])
+    parser = argparse.ArgumentParser(
+        description=f"Run optimization algorithms over a collection of functions. "
+                    f"{len(OBJECTIVE_FUNCTIONS)} functions are available: {function_list}."
     )
 
-    print(f"{'=' * 6}")
+    parser.add_argument(
+        "algorithm",
+        choices=("genetic", "hill-climbing"), type=str,
+        help="Algorithm to run."
+    )
+    parser.add_argument(
+        "--cpu-cores", "-c",
+        dest="core_num", type=int, default=multiprocessing.cpu_count(),
+        help=f"How many CPU cores to use for calculation. "
+             f"Defaults to all available cores ({multiprocessing.cpu_count()} on this machine)."
+    )
 
-    print()
-    print()
+    args = parser.parse_args()
 
-    ## Hill climbing
-    print(f"{'=' * 6} HILL CLIMBING {'=' * 6}")
+    CPU_CORES: int = args.core_num
+    ALGORITHM: str = args.algorithm.lower()
 
-    print(f"Running hill climb algorithm over {len(OBJECTIVE_FUNCTIONS)} functions ...")
-    print()
 
-    test_hill_climb()
+    if ALGORITHM == "genetic":
+        ## Genetic
+        print(f"{'=' * 6} GENETIC {'=' * 6}")
+        GENETIC_NUMBER_OF_RUNS: int = len(SEEDS)
 
-    print(f"{'=' * 6}")
+        print(f"Running genetic algorithm over {len(OBJECTIVE_FUNCTIONS)} functions ...")
+        print()
+
+        test_genetic(
+            number_of_runs_per_function=GENETIC_NUMBER_OF_RUNS,
+            concurrency=CPU_CORES,
+        )
+
+        print(f"{'=' * 6}")
+        print()
+
+    elif ALGORITHM == "hill-climbing":
+        ## Hill climbing
+        print(f"{'=' * 6} HILL CLIMBING {'=' * 6}")
+
+        print(f"Running hill climb algorithm over {len(OBJECTIVE_FUNCTIONS)} functions ...")
+        print()
+
+        test_hill_climb()
+
+        print(f"{'=' * 6}")
+        print()
 
 
 if __name__ == '__main__':
