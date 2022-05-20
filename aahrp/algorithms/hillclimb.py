@@ -29,13 +29,18 @@ def hill_climbing_algorithm(
         next_node: List[float] = []
         next_val: float = min_val
 
+        # Select best neighbor
         for neighbor in neighbors:
-            if function(*neighbor) < next_val:
+            neighbor_val = function(*neighbor)
+            if neighbor_val < next_val:
                 next_node = neighbor
-                next_val = function(*neighbor)
+                next_val = neighbor_val
 
+        # If there exists a better neighbor, set it as the best node
         if next_val < min_val:
             min_node = next_node
             min_val = next_val
         else:
             return min_val
+
+    return min_val
