@@ -59,7 +59,9 @@ def make_genetic_params_fn(
             crossover_probability,
             mutation_probability
         )
+
     return _inner
+
 
 # Because not every function can be optimized best the same way, we experimented and came up with
 # a set of genetic algorithm parameters optimized for each individual function.
@@ -96,6 +98,7 @@ GENETIC_FUNCTION_TO_OPTIMIZED_PARAMETERS: Dict[Type[Function], Callable[[int], T
                                      crossover_probability=0.65, mutation_probability=0.015),
 }
 
+
 def run_genetic_algorithm(
         function: Type[Function],
         number_of_runs: int = len(SEEDS),
@@ -127,7 +130,8 @@ def run_genetic_algorithm(
 def run_hill_climb_algorithm(
         function: Type[Function],
         num_runs: int = 1,
-        concurrency: int = multiprocessing.cpu_count()
+        concurrency: int = multiprocessing.cpu_count(),
+        step_size: int = 1
 ) -> float:
     concurrency_arguments: List[Tuple[Any, ...]] = [
         (
@@ -136,7 +140,7 @@ def run_hill_climb_algorithm(
             function.bounds_lower(),
             function.bounds_upper(),
             SEEDS[index],
-            1
+            step_size
         )
         for index in range(num_runs)
     ]
@@ -200,6 +204,31 @@ def test_hill_climb(
         print()
 
 
+def test_hill_climb_step(
+        concurrency: int = multiprocessing.cpu_count()
+):
+    for i in [1, 2, 5, 10, 50, 100, 500, 1000]:
+        print(f"Step size is {i}")
+        for index, function in enumerate(OBJECTIVE_FUNCTIONS):
+            header: str = f"[{function.__name__} | {index + 1:2d} of {len(OBJECTIVE_FUNCTIONS):2d}]"
+            print(f"{header} Running hill climb algorithm ...")
+
+            timer: Timer = Timer()
+            with timer:
+                best_result: float = run_hill_climb_algorithm(
+                    function,
+                    num_runs=1,
+                    concurrency=concurrency,
+                    step_size=i
+                )
+
+            print(f"{header} Time to best solution: {round(timer.get_delta(), 2)} seconds.")
+            print(f"{header} Best solution: {best_result}")
+            print(f"{header} Optimal solution: {function.global_optimum()}")
+            print(f"{header} Distance: {best_result - function.global_optimum()}")
+            print()
+
+
 ####
 # Main
 ####
@@ -212,7 +241,7 @@ def main():
 
     parser.add_argument(
         "algorithm",
-        choices=("genetic", "hill-climbing"), type=str,
+        choices=("genetic", "hill-climbing", "hill-climbing-step"), type=str,
         help="Algorithm to run."
     )
     parser.add_argument(
@@ -227,7 +256,6 @@ def main():
     CPU_CORES: int = args.core_num
     ALGORITHM: str = args.algorithm.lower()
     NUMBER_OF_RUNS: int = len(SEEDS)
-
 
     if ALGORITHM == "genetic":
         ## Genetic
@@ -253,6 +281,19 @@ def main():
 
         test_hill_climb(
             num_runs_per_function=NUMBER_OF_RUNS,
+            concurrency=CPU_CORES
+        )
+
+        print(f"{'=' * 6}")
+        print()
+    elif ALGORITHM == "hill-climbing-step":
+        ## Hill climbing
+        print(f"{'=' * 6} HILL CLIMBING STEP {'=' * 6}")
+
+        print(f"Running hill climb algorithm over {len(OBJECTIVE_FUNCTIONS)} functions ...")
+        print()
+
+        test_hill_climb_step(
             concurrency=CPU_CORES
         )
 
