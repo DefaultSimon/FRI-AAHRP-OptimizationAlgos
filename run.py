@@ -367,6 +367,37 @@ def main():
         print(f"{'=' * 6}")
         print()
 
+    elif ALGORITHM == "test-sa":
+        # Default parameters
+        step_size: List[float] = [0.1, 0.5, 1, 5]
+        min_temperature: List[float] = [0.001, 0.01, 0.1, 1]
+        max_temperature: List[float] = [100, 500, 1000, 5000]
+        cooling_rate: List[float] = [0.9, 0.95, 0.99, 0.999]
+
+        # Which configuration to test
+        i = 0
+        j = 0
+        k = 0
+        l = 0
+
+        # Test simulated annealing
+        print(f"{'=' * 6} SIMULATED ANNEALING {'=' * 6}")
+        print(f"Min temp: {min_temperature[i]}, max temp: {max_temperature[j]}, cooling rate: {cooling_rate[k]}, "
+              f"step size: {step_size[l]}")
+        print()
+
+        test_simulated_annealing(
+            number_of_runs_per_function=NUMBER_OF_RUNS,
+            concurrency=CPU_CORES,
+            step_size=step_size[i],
+            min_temperature=min_temperature[j],
+            max_temperature=max_temperature[k],
+            cooling_rate=cooling_rate[l]
+        )
+
+        print(f"{'=' * 6}")
+        print()
+
     elif ALGORITHM == "hill-climbing":
         # Hill climbing
         print(f"{'=' * 6} HILL CLIMBING {'=' * 6}")
