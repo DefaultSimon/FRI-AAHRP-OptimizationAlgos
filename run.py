@@ -151,6 +151,7 @@ def run_simulated_annealing(
         min_temperature: float = 0.1,
         max_temperature: float = 100,
         cooling_rate: float = 0.99,
+        max_iterations: int = 10000,
 ) -> Tuple[float, List[float]]:
     """
     Runs the simulated annealing algorithm on the given function.
@@ -164,7 +165,8 @@ def run_simulated_annealing(
             step_size,
             min_temperature,
             max_temperature,
-            cooling_rate
+            cooling_rate,
+            max_iterations,
         ) for _ in range(number_of_runs)]
 
     solutions: List[Tuple[float, List[float]]] = run_concurrently(
@@ -185,6 +187,7 @@ def test_simulated_annealing(output_file: str, function: int = None):
     """
     # Default parameters
     number_of_runs = 200
+    max_iterations = 10000
     optimized_params: Dict[Type[Function], Dict] = {
         Schaffer1: {'min_temperature': 0.01, 'max_temperature': 500, 'cooling_rate': 0.95, 'step_size': 0.1},
         Schaffer2: {'min_temperature': 0.01, 'max_temperature': 100, 'cooling_rate': 0.99, 'step_size': 0.5},
@@ -216,7 +219,8 @@ def test_simulated_annealing(output_file: str, function: int = None):
                     step_size=optimized_params[function]['step_size'],
                     min_temperature=optimized_params[function]['min_temperature'],
                     max_temperature=optimized_params[function]['max_temperature'],
-                    cooling_rate=optimized_params[function]['cooling_rate']
+                    cooling_rate=optimized_params[function]['cooling_rate'],
+                    max_iterations=max_iterations
                 )
 
                 # Append tab separated list from result tuple to file
