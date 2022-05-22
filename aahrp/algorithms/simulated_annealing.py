@@ -34,9 +34,12 @@ def simulated_annealing(
             min_value = neighbor_value
         else:
             # If neighbor is worse, move to it with probability based on temperature
-            probability = math.exp(-abs(neighbor_value - min_value) / current_temp)
+            #probability = math.exp(-abs(neighbor_value - min_value) / current_temp)
+            diff = neighbor_value - min_value
+            probability = math.exp(-diff / current_temp)
 
-            if probability > random.uniform(0, 1):
+            #if probability > random.uniform(0, 1):
+            if diff < 0 or random.uniform(0, 1) < probability:
                 min_point = neighbor
                 min_value = neighbor_value
 
