@@ -9,6 +9,7 @@ from aahrp.functions import \
     Expo, Modlangerman, EMichalewicz, Shekelfox5, Schwefel
 from aahrp.algorithms.genetic import genetic_algorithm
 from aahrp.algorithms.hillclimb import hill_climbing_algorithm
+from aahrp.algorithms.simulated_annealing import simulated_annealing
 from aahrp.timer import Timer
 from aahrp.parallelization import run_concurrently
 
@@ -124,6 +125,42 @@ def run_genetic_algorithm(
     return min(solutions)
 
 
+# Runs the simulated annealing algorithm on the given function.
+def run_simulated_annealing(
+        function: Type[Function],
+        number_of_runs: int = len(SEEDS),
+        concurrency: int = multiprocessing.cpu_count(),
+        step_size: int = 1,
+        temperature: int = 100
+) -> float:
+    if number_of_runs > len(SEEDS):
+        raise KeyError(f"Not enough pre-generated seeds for {number_of_runs} runs, "
+                       f"generate some more at the top of the script.")
+
+    concurrency: int = min(concurrency, number_of_runs)
+    concurrency_arguments: List[Tuple[Any, ...]] = [
+        (
+            function.function,
+            function.dimensions(),
+            function.bounds_lower(),
+            function.bounds_upper(),
+            SEEDS[index],
+            step_size,
+            temperature
+        )
+        for index in range(number_of_runs)
+    ]
+
+    solutions: List[float] = run_concurrently(
+        function=simulated_annealing,
+        list_of_argument_tuples=concurrency_arguments,
+        concurrency=concurrency,
+        chunk_size=2
+    )
+
+    return min(solutions)
+
+
 ####
 # HILL CLIMB ALGORITHM
 ####
@@ -169,6 +206,29 @@ def test_genetic(
         timer: Timer = Timer()
         with timer:
             best_result: float = run_genetic_algorithm(
+                function,
+                number_of_runs=number_of_runs_per_function,
+                concurrency=concurrency,
+            )
+
+        print(f"{header} Time to best solution: {round(timer.get_delta(), 2)} seconds.")
+        print(f"{header} Best solution: {best_result}")
+        print(f"{header} Optimal solution: {function.global_optimum()}")
+        print(f"{header} Distance: {best_result - function.global_optimum()}")
+        print()
+
+
+def test_simulated_annealing(
+        number_of_runs_per_function: int,
+        concurrency: int,
+):
+    for index, function in enumerate(OBJECTIVE_FUNCTIONS):
+        header: str = f"[{function.__name__.ljust(15)}|{index + 1:2d} of {len(OBJECTIVE_FUNCTIONS):2d}]"
+        print(f"{header} Running simulated annealing ...")
+
+        timer: Timer = Timer()
+        with timer:
+            best_result: float = run_simulated_annealing(
                 function,
                 number_of_runs=number_of_runs_per_function,
                 concurrency=concurrency,
@@ -241,7 +301,7 @@ def main():
 
     parser.add_argument(
         "algorithm",
-        choices=("genetic", "hill-climbing", "hill-climbing-step"), type=str,
+        choices=("genetic", "sa", "hill-climbing", "hill-climbing-step"), type=str,
         help="Algorithm to run."
     )
     parser.add_argument(
@@ -258,7 +318,7 @@ def main():
     NUMBER_OF_RUNS: int = len(SEEDS)
 
     if ALGORITHM == "genetic":
-        ## Genetic
+        # Genetic
         print(f"{'=' * 6} GENETIC {'=' * 6}")
 
         print(f"Running genetic algorithm over {len(OBJECTIVE_FUNCTIONS)} functions ...")
@@ -272,11 +332,26 @@ def main():
         print(f"{'=' * 6}")
         print()
 
+    elif ALGORITHM == "sa":
+        # Simulated annealing
+        print(f"{'=' * 6} SIMULATED ANNEALING {'=' * 6}")
+
+        print(f"Running simulated annealing over {len(OBJECTIVE_FUNCTIONS)} functions ...")
+        print()
+
+        test_simulated_annealing(
+            number_of_runs_per_function=NUMBER_OF_RUNS,
+            concurrency=CPU_CORES,
+        )
+
+        print(f"{'=' * 6}")
+        print()
+
     elif ALGORITHM == "hill-climbing":
-        ## Hill climbing
+        # Hill climbing
         print(f"{'=' * 6} HILL CLIMBING {'=' * 6}")
 
-        print(f"Running hill climb algorithm over {len(OBJECTIVE_FUNCTIONS)} functions ...")
+        print(f"Running hill climbing algorithm over {len(OBJECTIVE_FUNCTIONS)} functions ...")
         print()
 
         test_hill_climb(
@@ -287,10 +362,10 @@ def main():
         print(f"{'=' * 6}")
         print()
     elif ALGORITHM == "hill-climbing-step":
-        ## Hill climbing
-        print(f"{'=' * 6} HILL CLIMBING STEP {'=' * 6}")
+        # Hill climbing (test step size)
+        print(f"{'=' * 6} HILL CLIMBING BESTSTEP SIZE {'=' * 6}")
 
-        print(f"Running hill climb algorithm over {len(OBJECTIVE_FUNCTIONS)} functions ...")
+        print(f"Running hill climbing algorithm over {len(OBJECTIVE_FUNCTIONS)} functions ...")
         print()
 
         test_hill_climb_step(

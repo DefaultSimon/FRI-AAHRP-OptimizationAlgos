@@ -32,15 +32,14 @@ def get_neighbors(
         step: float = 0.1
 ) -> List[List[float]]:
     """
-    Return all neighbors of a point
-    :param point:
-    :param dimensions:
-    :param bounds_lower:
-    :param bounds_upper:
-    :param step:
-    :return:
+    Return all neighbors of a point.
+    :param point: Point to generate neighbors for.
+    :param bounds_lower: Lower bounds for components.
+    :param bounds_upper: Upper bounds for components.
+    :param step: Step size for each component.
+    :return: List of all neighbors of the point.
     """
-    offsets = list(product(*([-step, 0, step] for i in point)))
+    offsets = list(product(*([-step, 0, step] for _ in point)))
     neighbors: List[List[float]] = []
 
     for offset in offsets:
