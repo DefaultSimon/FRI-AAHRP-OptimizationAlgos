@@ -188,8 +188,8 @@ def test_simulated_annealing(output_file: str, function: int = None):
     :return:
     """
     # Default parameters
-    number_of_runs = 200
-    max_iterations = 10000
+    number_of_runs = 1000
+    max_iterations = 100000
     optimized_params: Dict[Type[Function], Dict] = {
         Schaffer1: {'min_temperature': 0.01, 'max_temperature': 500, 'cooling_rate': 0.95, 'step_size': 0.1},
         Schaffer2: {'min_temperature': 0.01, 'max_temperature': 100, 'cooling_rate': 0.99, 'step_size': 0.5},
