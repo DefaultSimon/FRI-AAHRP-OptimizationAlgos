@@ -380,32 +380,34 @@ def main():
 
     elif ALGORITHM == "test-sa":
         # Default parameters
-        step_size: List[float] = [0.1, 0.5, 1, 5]
-        min_temperature: List[float] = [0.01, 0.1, 1]
-        max_temperature: List[float] = [100, 500, 1000]
+        step_size: List[List[float]] = [
+            [0.5, 1, 5], [0.5, 1, 5], [0.5, 1, 5], [1, 5, 10], [0.05, 0.1, 0.5, 1], [0.1, 0.5, 1],
+            [0.05, 0.1, 0.5, 1], [0.01, 0.05, 0.1], [0.05, 0.1, 0.5, 1], [1, 5, 10],
+        ]
+        min_temperature: float = 0.1
+        max_temperature: List[float] = [100, 10, 10, 1000, 100, 1, 100, 10, 10, 1]  # Best temperature per function
         cooling_rate: List[float] = [0.95, 0.99]
 
         # Test simulated annealing
         print(f"{'=' * 6} SIMULATED ANNEALING {'=' * 6}")
 
         print(f"Func: {OBJECTIVE_FUNCTIONS[FUNCTION_INDEX].__name__}")
-        for step in step_size:
-            for min_temp in min_temperature:
-                for max_temp in max_temperature:
-                    for rate in cooling_rate:
-                        timer: Timer = Timer()
-                        with timer:
-                            best_result: float = run_simulated_annealing(
-                                OBJECTIVE_FUNCTIONS[FUNCTION_INDEX],
-                                number_of_runs=NUMBER_OF_RUNS,
-                                concurrency=CPU_CORES,
-                                step_size=step,
-                                min_temperature=min_temp,
-                                max_temperature=max_temp,
-                                cooling_rate=rate
-                            )
-                        print(f"    {best_result - OBJECTIVE_FUNCTIONS[FUNCTION_INDEX].global_optimum()} ({min_temp}, "
-                              f"{max_temp}, {rate}, {step})")
+        print("     Result,             Min, Max, Rate, Step")
+        for step in step_size[FUNCTION_INDEX]:
+            for rate in cooling_rate:
+                timer: Timer = Timer()
+                with timer:
+                    best_result: float = run_simulated_annealing(
+                        OBJECTIVE_FUNCTIONS[FUNCTION_INDEX],
+                        number_of_runs=NUMBER_OF_RUNS,
+                        concurrency=CPU_CORES,
+                        step_size=step,
+                        min_temperature=min_temperature,
+                        max_temperature=max_temperature[FUNCTION_INDEX],
+                        cooling_rate=rate
+                    )
+                print(f"    {best_result - OBJECTIVE_FUNCTIONS[FUNCTION_INDEX].global_optimum()} ({min_temperature}, "
+                      f"{max_temperature[FUNCTION_INDEX]}, {rate}, {step})")
 
     elif ALGORITHM == "hill-climbing":
         # Hill climbing
