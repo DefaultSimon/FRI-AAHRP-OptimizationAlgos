@@ -3,7 +3,7 @@ import random
 from random import Random
 from typing import List, Callable, Tuple
 
-from aahrp.utilities import select_random_point, get_neighbors
+from aahrp.utilities import select_random_point
 
 
 def get_random_neighbor(
@@ -56,11 +56,8 @@ def simulated_annealing(
         else:
             # If neighbor is worse, move to it with probability based on temperature
             probability = math.exp(-abs(neighbor_value - min_value) / current_temp)
-            # diff = neighbor_value - min_value
-            # probability = math.exp(-diff / current_temp)
 
             if probability > random.uniform(0, 1):
-            #if diff < 0 or random.uniform(0, 1) < probability:
                 min_point = neighbor
                 min_value = neighbor_value
 
