@@ -178,15 +178,11 @@ def run_simulated_annealing(
     return min(solutions, key=lambda solution: solution[0])
 
 
-def test_simulated_annealing(output_file: str):
+def test_simulated_annealing(output_file: str, function: int = None):
     """
     Test simulated annealing algorithm.
     :return:
     """
-    print(f"{'=' * 6} SIMULATED ANNEALING {'=' * 6}")
-    print(f"Running simulated annealing over {len(OBJECTIVE_FUNCTIONS)} functions ...")
-    print()
-
     # Default parameters
     number_of_runs = 200
     optimized_params: Dict[Type[Function], Dict] = {
@@ -202,9 +198,45 @@ def test_simulated_annealing(output_file: str):
         Schwefel: {'min_temperature': 0.1, 'max_temperature': 100, 'cooling_rate': 0.95, 'step_size': 10}
     }
 
-    for index, function in enumerate(OBJECTIVE_FUNCTIONS):
-        header: str = f"[{function.__name__.ljust(15)}|{index + 1:2d} of {len(OBJECTIVE_FUNCTIONS):2d}]"
-        print(f"{header} Running simulated annealing ...")
+    if function is None:
+        print(f"{'=' * 6} SIMULATED ANNEALING {'=' * 6}")
+        print(f"Running simulated annealing over {len(OBJECTIVE_FUNCTIONS)} functions ...")
+        print()
+
+        for index, function in enumerate(OBJECTIVE_FUNCTIONS):
+            header: str = f"[{function.__name__.ljust(15)}|{index + 1:2d} of {len(OBJECTIVE_FUNCTIONS):2d}]"
+            print(f"{header} Running simulated annealing ...")
+
+            timer: Timer = Timer()
+            with timer:
+                best_result: Tuple[float, List[float]] = run_simulated_annealing(
+                    function,
+                    number_of_runs=number_of_runs,
+                    concurrency=multiprocessing.cpu_count(),
+                    step_size=optimized_params[function]['step_size'],
+                    min_temperature=optimized_params[function]['min_temperature'],
+                    max_temperature=optimized_params[function]['max_temperature'],
+                    cooling_rate=optimized_params[function]['cooling_rate']
+                )
+
+                # Append tab separated list from result tuple to file
+                with open(output_file, "a") as file:
+                    file.write("\t".join(map(str, best_result[1])) + "\n")
+
+            print(f"{header} Time to best solution: {round(timer.get_delta(), 2)} seconds.")
+            print(f"{header} Best solution: {best_result[0]}")
+            print(f"{header} Best solution vector: {best_result[1]}")
+            print(f"{header} Optimal solution: {function.global_optimum()}")
+            print(f"{header} Distance: {best_result[0] - function.global_optimum()}")
+            print()
+
+        print(f"{'=' * 6}")
+        print()
+    else:
+        function = OBJECTIVE_FUNCTIONS[function]
+        print(f"{'=' * 6} SIMULATED ANNEALING {'=' * 6}")
+        print(f"Running simulated annealing for {function.__name__} ...")
+        print()
 
         timer: Timer = Timer()
         with timer:
@@ -222,15 +254,13 @@ def test_simulated_annealing(output_file: str):
             with open(output_file, "a") as file:
                 file.write("\t".join(map(str, best_result[1])) + "\n")
 
-        print(f"{header} Time to best solution: {round(timer.get_delta(), 2)} seconds.")
-        print(f"{header} Best solution: {best_result[0]}")
-        print(f"{header} Best solution vector: {best_result[1]}")
-        print(f"{header} Optimal solution: {function.global_optimum()}")
-        print(f"{header} Distance: {best_result[0] - function.global_optimum()}")
+        print(f"Time to best solution: {round(timer.get_delta(), 2)} seconds.")
+        print(f"Best solution: {best_result[0]}")
+        print(f"Best solution vector: {best_result[1]}")
+        print(f"Optimal solution: {function.global_optimum()}")
+        print(f"Distance: {best_result[0] - function.global_optimum()}")
+        print(f"{'=' * 6}")
         print()
-
-    print(f"{'=' * 6}")
-    print()
 
 
 def run_hill_climb_algorithm(
@@ -266,13 +296,38 @@ def run_hill_climb_algorithm(
 
 def test_hill_climb(
         output_file: str,
+        function: int,
         num_runs_per_function: int = len(SEEDS),
         concurrency: int = multiprocessing.cpu_count()
-
 ):
-    for index, function in enumerate(OBJECTIVE_FUNCTIONS):
-        header: str = f"[{function.__name__} | {index + 1:2d} of {len(OBJECTIVE_FUNCTIONS):2d}]"
-        print(f"{header} Running hill climb algorithm ...")
+    if function is None:
+        print(f"Running hill climbing algorithm over {len(OBJECTIVE_FUNCTIONS)} functions ...")
+        print()
+        for index, function in enumerate(OBJECTIVE_FUNCTIONS):
+            header: str = f"[{function.__name__} | {index + 1:2d} of {len(OBJECTIVE_FUNCTIONS):2d}]"
+            print(f"{header} Running hill climb algorithm ...")
+
+            timer: Timer = Timer()
+            with timer:
+                best_result: Tuple[float, List[float]] = run_hill_climb_algorithm(
+                    function,
+                    num_runs=num_runs_per_function,
+                    concurrency=concurrency,
+                )
+
+                # Append tab separated list from result tuple to file
+                with open(output_file, "a") as file:
+                    file.write("\t".join(map(str, best_result[1])) + "\n")
+
+            print(f"{header} Time to best solution: {round(timer.get_delta(), 2)} seconds.")
+            print(f"{header} Best solution: {best_result[0]}")
+            print(f"{header} Best solution vector: {best_result[1]}")
+            print(f"{header} Optimal solution: {function.global_optimum()}")
+            print(f"{header} Distance: {best_result[0] - function.global_optimum()}")
+            print()
+    else:
+        function = OBJECTIVE_FUNCTIONS[function]
+        print(f"Running hill climb algorithm for {function.__name__} ...")
 
         timer: Timer = Timer()
         with timer:
@@ -286,12 +341,11 @@ def test_hill_climb(
             with open(output_file, "a") as file:
                 file.write("\t".join(map(str, best_result[1])) + "\n")
 
-        print(f"{header} Time to best solution: {round(timer.get_delta(), 2)} seconds.")
-        print(f"{header} Best solution: {best_result[0]}")
-        print(f"{header} Best solution vector: {best_result[1]}")
-        print(f"{header} Optimal solution: {function.global_optimum()}")
-        print(f"{header} Distance: {best_result[0] - function.global_optimum()}")
-        print()
+        print(f"Time to best solution: {round(timer.get_delta(), 2)} seconds.")
+        print(f"Best solution: {best_result[0]}")
+        print(f"Best solution vector: {best_result[1]}")
+        print(f"Optimal solution: {function.global_optimum()}")
+        print(f"Distance: {best_result[0] - function.global_optimum()}")
 
 
 def main():
@@ -302,7 +356,7 @@ def main():
     )
     parser.add_argument(
         "algorithm",
-        choices=("genetic", "sa", "hill-climbing"),
+        choices=("genetic", "sa", "hc"),
         type=str,
         help="Algorithm to run."
     )
@@ -310,7 +364,6 @@ def main():
         "--func", "-f",
         choices=(range(0, 9)),
         type=int,
-        default=0,
         help="Index of function to test."
     )
     parser.add_argument(
@@ -351,7 +404,7 @@ def main():
         print()
 
     elif ALGORITHM == "sa":
-        test_simulated_annealing(output_file=args.output)
+        test_simulated_annealing(output_file=args.output, function=args.func)
 
     elif ALGORITHM == "test-sa":
         # Default parameters
@@ -384,15 +437,13 @@ def main():
                 print(f"    {best_result - OBJECTIVE_FUNCTIONS[FUNCTION_INDEX].global_optimum()} ({min_temperature}, "
                       f"{max_temperature[FUNCTION_INDEX]}, {rate}, {step})")
 
-    elif ALGORITHM == "hill-climbing":
+    elif ALGORITHM == "hc":
         # Hill climbing
         print(f"{'=' * 6} HILL CLIMBING {'=' * 6}")
 
-        print(f"Running hill climbing algorithm over {len(OBJECTIVE_FUNCTIONS)} functions ...")
-        print()
-
         test_hill_climb(
             output_file=args.output,
+            function=args.func,
             num_runs_per_function=NUMBER_OF_RUNS,
             concurrency=CPU_CORES
         )
