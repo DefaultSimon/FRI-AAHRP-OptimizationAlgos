@@ -178,7 +178,7 @@ def run_simulated_annealing(
     return min(solutions, key=lambda solution: solution[0])
 
 
-def test_simulated_annealing():
+def test_simulated_annealing(output_file: str):
     """
     Test simulated annealing algorithm.
     :return:
@@ -219,7 +219,7 @@ def test_simulated_annealing():
             )
 
             # Append tab separated list from result tuple to file
-            with open("result.txt", "a") as file:
+            with open(output_file, "a") as file:
                 file.write("\t".join(map(str, best_result[1])) + "\n")
 
         print(f"{header} Time to best solution: {round(timer.get_delta(), 2)} seconds.")
@@ -329,6 +329,12 @@ def main():
         help="Index of function to test."
     )
     parser.add_argument(
+        "--output", "-o",
+        type=str,
+        default="results.txt",
+        help="Output file to write results to."
+    )
+    parser.add_argument(
         "--cpu-cores", "-c",
         dest="core_num",
         type=int,
@@ -360,7 +366,7 @@ def main():
         print()
 
     elif ALGORITHM == "sa":
-        test_simulated_annealing()
+        test_simulated_annealing(output_file=args.output)
 
     elif ALGORITHM == "test-sa":
         # Default parameters
