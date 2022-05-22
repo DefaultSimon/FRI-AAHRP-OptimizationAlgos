@@ -6,6 +6,19 @@ from typing import List, Callable, Tuple
 from aahrp.utilities import select_random_point, get_neighbors
 
 
+def get_random_neighbor(
+        point: List[float],
+        bounds_lower: List[float],
+        bounds_upper: List[float],
+        step: float = 0.1,
+) -> List[float]:
+    # Get a random neighbor of the point within the bounds and step size away from the point.
+    return [
+        max(bounds_lower[i], min(bounds_upper[i], point[i] + random.uniform(-step, step)))
+        for i in range(len(point))
+    ]
+
+
 def simulated_annealing(
         function: Callable[..., float],
         dimensions: int,
@@ -27,10 +40,11 @@ def simulated_annealing(
     print(f"Temperature: {current_temp}, max_temperature: {max_temperature}, min_temperature: {min_temperature}, cooling_rate: {cooling_rate}, step: {step}")
 
     while current_temp > min_temperature and iterations < max_iterations:
-        neighbors = get_neighbors(min_point, bounds_lower, bounds_upper, step)
-        neighbor = random.choice(neighbors)
+        #neighbors = get_neighbors(min_point, bounds_lower, bounds_upper, step)
+        #neighbor = random.choice(neighbors)
+        neighbor = get_random_neighbor(min_point, bounds_lower, bounds_upper, step)
         neighbor_value = function(*neighbor)
-        print(f"neighbors: {neighbors}, neighbor: {neighbor}, neighbor_value: {neighbor_value}")
+        print(f"neighbor: {neighbor}, neighbor_value: {neighbor_value}")
 
         if neighbor_value < min_value:
             # If neighbor is better, move to it
