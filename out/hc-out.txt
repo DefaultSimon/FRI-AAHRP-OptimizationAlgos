@@ -1,0 +1,75 @@
+====== HILL CLIMBING ======
+Running hill climbing algorithm over 10 functions ...
+
+[Schaffer1 |  1 of 10] Running hill climb algorithm ...
+[Schaffer1 |  1 of 10] Time to best solution: 0.56 seconds.
+[Schaffer1 |  1 of 10] Best solution: 0.038719426760963516
+[Schaffer1 |  1 of 10] Best solution vector: [1.2713128758918089, -6.106030896460354]
+[Schaffer1 |  1 of 10] Optimal solution: 0
+[Schaffer1 |  1 of 10] Distance: 0.038719426760963516
+
+[Schaffer2 |  2 of 10] Running hill climb algorithm ...
+[Schaffer2 |  2 of 10] Time to best solution: 0.22 seconds.
+[Schaffer2 |  2 of 10] Best solution: 0.12341249789097858
+[Schaffer2 |  2 of 10] Best solution vector: [-0.006537093552424267, -0.0019047008974553137]
+[Schaffer2 |  2 of 10] Optimal solution: 0
+[Schaffer2 |  2 of 10] Distance: 0.12341249789097858
+
+[Salomon |  3 of 10] Running hill climb algorithm ...
+[Salomon |  3 of 10] Time to best solution: 0.87 seconds.
+[Salomon |  3 of 10] Best solution: 0.20039850919048263
+[Salomon |  3 of 10] Best solution vector: [-0.04367872546474416, 0.45687962612581146, -0.1522560216240123, 1.2224518283379666, -1.5107248706812015]
+[Salomon |  3 of 10] Optimal solution: 0
+[Salomon |  3 of 10] Distance: 0.20039850919048263
+
+[Griewank |  4 of 10] Running hill climb algorithm ...
+[Griewank |  4 of 10] Time to best solution: 394.6 seconds.
+[Griewank |  4 of 10] Best solution: 50.12241642535592
+[Griewank |  4 of 10] Best solution vector: [0.7949023622109053, 0.35757981234826275, -24.243101058013963, 71.7354412257555, -241.28803048033654, 27.53389323812371, 202.28941823047091, 154.71002551684614, 52.443964483683885, -253.31917461255432]
+[Griewank |  4 of 10] Optimal solution: 0
+[Griewank |  4 of 10] Distance: 50.12241642535592
+
+[PriceTransistor |  5 of 10] Running hill climb algorithm ...
+[PriceTransistor |  5 of 10] Time to best solution: 85.13 seconds.
+[PriceTransistor |  5 of 10] Best solution: 22.17314928301351
+[PriceTransistor |  5 of 10] Best solution vector: [0.9034429539036013, 0.9472096922284461, 7.379759261249767, 6.560829178442425, 4.52346349401561, 7.102783973576693, 1.7669277205745724, 0.9224889905840987, 2.003336920112511]
+[PriceTransistor |  5 of 10] Optimal solution: 0
+[PriceTransistor |  5 of 10] Distance: 22.17314928301351
+
+[Expo |  6 of 10] Running hill climb algorithm ...
+[Expo |  6 of 10] Time to best solution: 301.59 seconds.
+[Expo |  6 of 10] Best solution: -0.871812339243016
+[Expo |  6 of 10] Best solution vector: [0.284482582072048, -0.22685427230867106, 0.16807494008154578, 0.09126025185770104, 0.04578677653285723, -0.05653793657977335, -0.020787969595312816, -0.0586805477495993, -0.28010779907756955, 0.1332758754674579]
+[Expo |  6 of 10] Optimal solution: -1
+[Expo |  6 of 10] Distance: 0.12818766075698396
+
+[Modlangerman |  7 of 10] Running hill climb algorithm ...
+[Modlangerman |  7 of 10] Time to best solution: 553.02 seconds.
+[Modlangerman |  7 of 10] Best solution: -0.5131830333096981
+[Modlangerman |  7 of 10] Best solution vector: [8.165604895739458, 8.921014601924192, 3.134308773490191, 1.8349628911709157, 6.2709101427152945, 7.318864288580865, 4.6114801430932415, 0.5288160706626446, 6.971764504769796, 1.1261797951547048]
+[Modlangerman |  7 of 10] Optimal solution: -0.965
+[Modlangerman |  7 of 10] Distance: 0.4518169666903019
+
+[EMichalewicz |  8 of 10] Running hill climb algorithm ...
+[EMichalewicz |  8 of 10] Time to best solution: 0.98 seconds.
+[EMichalewicz |  8 of 10] Best solution: -3.397666945915001
+[EMichalewicz |  8 of 10] Best solution vector: [2.6569186375427796, 0.1907322495413013, 2.3341325576831577, 1.5196428186142454, 2.173533158642726]
+[EMichalewicz |  8 of 10] Optimal solution: -4.6877
+[EMichalewicz |  8 of 10] Distance: 1.2900330540849994
+
+[Shekelfox5 |  9 of 10] Running hill climb algorithm ...
+[Shekelfox5 |  9 of 10] Time to best solution: 7.25 seconds.
+[Shekelfox5 |  9 of 10] Best solution: -5.696553720770662
+[Shekelfox5 |  9 of 10] Best solution vector: [8.214179569117082, 9.321898581286254, 5.12622788719853, 7.485225912022949, 4.490551874546702]
+[Shekelfox5 |  9 of 10] Optimal solution: -10.4056
+[Shekelfox5 |  9 of 10] Distance: 4.709046279229338
+
+[Schwefel | 10 of 10] Running hill climb algorithm ...
+[Schwefel | 10 of 10] Time to best solution: 329.58 seconds.
+[Schwefel | 10 of 10] Best solution: -2792.4904158532886
+[Schwefel | 10 of 10] Best solution vector: [-302.1786350457794, 421.4287037945181, -125.03751965462305, 420.9709066494552, -142.8770569403726, 421.04616667062976, -302.67084562832633, 420.6847792931053, -135.39049862123068, 203.90497564782436]
+[Schwefel | 10 of 10] Optimal solution: -4189.8289
+[Schwefel | 10 of 10] Distance: 1397.3384841467118
+
+======
+
