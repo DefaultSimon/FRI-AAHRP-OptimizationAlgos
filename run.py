@@ -151,7 +151,7 @@ def run_simulated_annealing(
         min_temperature: float = 0.1,
         max_temperature: float = 100,
         cooling_rate: float = 0.99,
-) -> float:
+) -> Tuple[float, List[float]]:
     """
     Runs the simulated annealing algorithm on the given function.
     """
@@ -167,14 +167,15 @@ def run_simulated_annealing(
             cooling_rate
         ) for _ in range(number_of_runs)]
 
-    solutions: List[float] = run_concurrently(
+    solutions: List[Tuple[float, List[float]]] = run_concurrently(
         function=simulated_annealing,
         list_of_argument_tuples=concurrency_arguments,
         concurrency=concurrency,
         chunk_size=2
     )
 
-    return min(solutions)
+    # Return solution with minimal min_value (i.e. best solution)
+    return min(solutions, key=lambda solution: solution[0])
 
 
 def test_simulated_annealing():
@@ -187,7 +188,7 @@ def test_simulated_annealing():
     print()
 
     # Default parameters
-    number_of_runs = 100
+    number_of_runs = 200
     optimized_params: Dict[Type[Function], Dict] = {
         Schaffer1: {'min_temperature': 0.01, 'max_temperature': 500, 'cooling_rate': 0.95, 'step_size': 0.1},
         Schaffer2: {'min_temperature': 0.01, 'max_temperature': 100, 'cooling_rate': 0.99, 'step_size': 0.5},
@@ -207,7 +208,7 @@ def test_simulated_annealing():
 
         timer: Timer = Timer()
         with timer:
-            best_result: float = run_simulated_annealing(
+            best_result: Tuple[float, List[float]] = run_simulated_annealing(
                 function,
                 number_of_runs=number_of_runs,
                 concurrency=multiprocessing.cpu_count(),
@@ -217,10 +218,15 @@ def test_simulated_annealing():
                 cooling_rate=optimized_params[function]['cooling_rate']
             )
 
+            # Append tab separated list from result tuple to file
+            with open("result.txt", "a") as file:
+                file.write("\t".join(map(str, best_result[1])) + "\n")
+
         print(f"{header} Time to best solution: {round(timer.get_delta(), 2)} seconds.")
-        print(f"{header} Best solution: {best_result}")
+        print(f"{header} Best solution: {best_result[0]}")
+        print(f"{header} Best solution vector: {best_result[1]}")
         print(f"{header} Optimal solution: {function.global_optimum()}")
-        print(f"{header} Distance: {best_result - function.global_optimum()}")
+        print(f"{header} Distance: {best_result[0] - function.global_optimum()}")
         print()
 
     print(f"{'=' * 6}")
@@ -311,7 +317,7 @@ def main():
     )
     parser.add_argument(
         "algorithm",
-        choices=("genetic", "sa", "hill-climbing", "og-sa", "test-sa", "hill-climbing-step"),
+        choices=("genetic", "sa", "hill-climbing"),
         type=str,
         help="Algorithm to run."
     )
@@ -375,7 +381,7 @@ def main():
             for rate in cooling_rate:
                 timer: Timer = Timer()
                 with timer:
-                    best_result: float = run_simulated_annealing(
+                    best_result: Tuple[float, List[float]] = run_simulated_annealing(
                         OBJECTIVE_FUNCTIONS[FUNCTION_INDEX],
                         number_of_runs=NUMBER_OF_RUNS,
                         concurrency=CPU_CORES,

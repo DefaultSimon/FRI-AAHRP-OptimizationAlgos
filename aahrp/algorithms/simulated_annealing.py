@@ -1,7 +1,7 @@
 import math
 import random
 from random import Random
-from typing import List, Callable
+from typing import List, Callable, Tuple
 
 from aahrp.utilities import select_random_point, get_neighbors
 
@@ -15,7 +15,7 @@ def simulated_annealing(
         min_temperature: float = 0.001,
         max_temperature: float = 100,  # Based on best temperature from Assignment 4
         cooling_rate: float = 0.95
-) -> float:
+) -> Tuple[float, List[float]]:
     # Set initial values
     current_temp = max_temperature
     min_point = select_random_point(dimensions, bounds_lower, bounds_upper, Random())
@@ -41,4 +41,4 @@ def simulated_annealing(
         # Decrease temperature
         current_temp *= cooling_rate
 
-    return min_value
+    return min_value, min_point
