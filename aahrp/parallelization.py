@@ -3,6 +3,7 @@ from typing import TypeVar, List, Callable, Tuple
 
 T = TypeVar("T")
 
+
 def run_concurrently(
         function: Callable[..., T],
         list_of_argument_tuples: List[Tuple],

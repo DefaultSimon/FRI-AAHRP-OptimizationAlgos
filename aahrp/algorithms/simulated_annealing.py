@@ -11,7 +11,6 @@ def simulated_annealing(
         dimensions: int,
         bounds_lower: List[float],
         bounds_upper: List[float],
-        seed: float = -1,
         step: float = 1,
         min_temperature: float = 0.001,
         max_temperature: float = 100,  # Based on best temperature from Assignment 4
@@ -19,7 +18,7 @@ def simulated_annealing(
 ) -> float:
     # Set initial values
     current_temp = max_temperature
-    min_point = select_random_point(dimensions, bounds_lower, bounds_upper, Random(seed))
+    min_point = select_random_point(dimensions, bounds_lower, bounds_upper, Random())
     min_value = function(*min_point)
 
     while current_temp > min_temperature:

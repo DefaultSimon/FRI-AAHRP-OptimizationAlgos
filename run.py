@@ -4,8 +4,7 @@ import argparse
 import multiprocessing
 from typing import List, Type, Tuple, Any, Dict, Callable
 
-from aahrp.functions import \
-    Function, Schaffer1, Schaffer2, Salomon, Griewank, PriceTransistor, \
+from aahrp.functions import Function, Schaffer1, Schaffer2, Salomon, Griewank, PriceTransistor,\
     Expo, Modlangerman, EMichalewicz, Shekelfox5, Schwefel
 from aahrp.algorithms.genetic import genetic_algorithm
 from aahrp.algorithms.hillclimb import hill_climbing_algorithm
@@ -18,7 +17,6 @@ OBJECTIVE_FUNCTIONS: List[Type[Function]] = [
     Expo, Modlangerman, EMichalewicz, Shekelfox5, Schwefel
 ]
 
-# 100 fixed seeds.
 SEEDS: List[int] = [
     4612, 10, 4620, 2575, 5137, 8210, 6170, 2090, 1067, 1066, 1583,
     4656, 49, 1593, 7225, 9277, 4162, 1092, 5703, 1608, 5200, 7251,
@@ -33,9 +31,6 @@ SEEDS: List[int] = [
 ]
 
 
-####
-# GENETIC ALGORITHM
-####
 def make_genetic_params_fn(
         f: Type[Function],
         max_generations: int,
@@ -125,31 +120,52 @@ def run_genetic_algorithm(
     return min(solutions)
 
 
-# Runs the simulated annealing algorithm on the given function.
+def test_genetic(
+        number_of_runs_per_function: int,
+        concurrency: int,
+):
+    for index, function in enumerate(OBJECTIVE_FUNCTIONS):
+        header: str = f"[{function.__name__.ljust(15)}|{index + 1:2d} of {len(OBJECTIVE_FUNCTIONS):2d}]"
+        print(f"{header} Running genetic algorithm ...")
+
+        timer: Timer = Timer()
+        with timer:
+            best_result: float = run_genetic_algorithm(
+                function,
+                number_of_runs=number_of_runs_per_function,
+                concurrency=concurrency,
+            )
+
+        print(f"{header} Time to best solution: {round(timer.get_delta(), 2)} seconds.")
+        print(f"{header} Best solution: {best_result}")
+        print(f"{header} Optimal solution: {function.global_optimum()}")
+        print(f"{header} Distance: {best_result - function.global_optimum()}")
+        print()
+
+
 def run_simulated_annealing(
         function: Type[Function],
-        number_of_runs: int = len(SEEDS),
+        number_of_runs: int = 100,
         concurrency: int = multiprocessing.cpu_count(),
         step_size: float = 1,
         min_temperature: float = 0.1,
         max_temperature: float = 100,
         cooling_rate: float = 0.99,
 ) -> float:
+    """
+    Runs the simulated annealing algorithm on the given function.
+    """
     concurrency: int = min(concurrency, number_of_runs)
-    concurrency_arguments: List[Tuple[Any, ...]] = [
-        (
+    concurrency_arguments: List[Tuple[Any, ...]] = [(
             function.function,
             function.dimensions(),
             function.bounds_lower(),
             function.bounds_upper(),
-            SEEDS[index],
             step_size,
             min_temperature,
             max_temperature,
             cooling_rate
-        )
-        for index in range(number_of_runs)
-    ]
+        ) for _ in range(number_of_runs)]
 
     solutions: List[float] = run_concurrently(
         function=simulated_annealing,
@@ -161,9 +177,56 @@ def run_simulated_annealing(
     return min(solutions)
 
 
-####
-# HILL CLIMB ALGORITHM
-####
+def test_simulated_annealing():
+    """
+    Test simulated annealing algorithm.
+    :return:
+    """
+    print(f"{'=' * 6} SIMULATED ANNEALING {'=' * 6}")
+    print(f"Running simulated annealing over {len(OBJECTIVE_FUNCTIONS)} functions ...")
+    print()
+
+    # Default parameters
+    number_of_runs = 100
+    optimized_params: Dict[Type[Function], Dict] = {
+        Schaffer1: {'min_temperature': 0.01, 'max_temperature': 500, 'cooling_rate': 0.95, 'step_size': 0.1},
+        Schaffer2: {'min_temperature': 0.01, 'max_temperature': 100, 'cooling_rate': 0.99, 'step_size': 0.5},
+        Salomon: {'min_temperature': 0.01, 'max_temperature': 100, 'cooling_rate': 0.99, 'step_size': 5},
+        Griewank: {'min_temperature': 0.1, 'max_temperature': 100, 'cooling_rate': 0.95, 'step_size': 5},
+        PriceTransistor: {'min_temperature': 0.1, 'max_temperature': 100, 'cooling_rate': 0.99, 'step_size': 0.1},
+        Expo: {'min_temperature': 0.01, 'max_temperature': 100, 'cooling_rate': 0.99, 'step_size': 0.1},
+        Modlangerman: {'min_temperature': 0.01, 'max_temperature': 100, 'cooling_rate': 0.99, 'step_size': 0.01},
+        EMichalewicz: {'min_temperature': 0.01, 'max_temperature': 10, 'cooling_rate': 0.99, 'step_size': 0.05},
+        Shekelfox5: {'min_temperature': 0.1, 'max_temperature': 10, 'cooling_rate': 0.99, 'step_size': 1},
+        Schwefel: {'min_temperature': 0.1, 'max_temperature': 100, 'cooling_rate': 0.95, 'step_size': 10}
+    }
+
+    for index, function in enumerate(OBJECTIVE_FUNCTIONS):
+        header: str = f"[{function.__name__.ljust(15)}|{index + 1:2d} of {len(OBJECTIVE_FUNCTIONS):2d}]"
+        print(f"{header} Running simulated annealing ...")
+
+        timer: Timer = Timer()
+        with timer:
+            best_result: float = run_simulated_annealing(
+                function,
+                number_of_runs=number_of_runs,
+                concurrency=multiprocessing.cpu_count(),
+                step_size=optimized_params[function]['step_size'],
+                min_temperature=optimized_params[function]['min_temperature'],
+                max_temperature=optimized_params[function]['max_temperature'],
+                cooling_rate=optimized_params[function]['cooling_rate']
+            )
+
+        print(f"{header} Time to best solution: {round(timer.get_delta(), 2)} seconds.")
+        print(f"{header} Best solution: {best_result}")
+        print(f"{header} Optimal solution: {function.global_optimum()}")
+        print(f"{header} Distance: {best_result - function.global_optimum()}")
+        print()
+
+    print(f"{'=' * 6}")
+    print()
+
+
 def run_hill_climb_algorithm(
         function: Type[Function],
         num_runs: int = 1,
@@ -190,63 +253,6 @@ def run_hill_climb_algorithm(
     )
 
     return min(solutions)
-
-
-####
-# MAIN TEST FUNCTIONS
-####
-def test_genetic(
-        number_of_runs_per_function: int,
-        concurrency: int,
-):
-    for index, function in enumerate(OBJECTIVE_FUNCTIONS):
-        header: str = f"[{function.__name__.ljust(15)}|{index + 1:2d} of {len(OBJECTIVE_FUNCTIONS):2d}]"
-        print(f"{header} Running genetic algorithm ...")
-
-        timer: Timer = Timer()
-        with timer:
-            best_result: float = run_genetic_algorithm(
-                function,
-                number_of_runs=number_of_runs_per_function,
-                concurrency=concurrency,
-            )
-
-        print(f"{header} Time to best solution: {round(timer.get_delta(), 2)} seconds.")
-        print(f"{header} Best solution: {best_result}")
-        print(f"{header} Optimal solution: {function.global_optimum()}")
-        print(f"{header} Distance: {best_result - function.global_optimum()}")
-        print()
-
-
-def test_simulated_annealing(
-        number_of_runs_per_function: int,
-        concurrency: int,
-        step_size: float = 1,
-        min_temperature: float = 0.1,
-        max_temperature: float = 100,
-        cooling_rate: float = 0.99,
-):
-    for index, function in enumerate(OBJECTIVE_FUNCTIONS):
-        header: str = f"[{function.__name__.ljust(15)}|{index + 1:2d} of {len(OBJECTIVE_FUNCTIONS):2d}]"
-        print(f"{header} Running simulated annealing ...")
-
-        timer: Timer = Timer()
-        with timer:
-            best_result: float = run_simulated_annealing(
-                function,
-                number_of_runs=number_of_runs_per_function,
-                concurrency=concurrency,
-                step_size=step_size,
-                min_temperature=min_temperature,
-                max_temperature=max_temperature,
-                cooling_rate=cooling_rate
-            )
-
-        print(f"{header} Time to best solution: {round(timer.get_delta(), 2)} seconds.")
-        print(f"{header} Best solution: {best_result}")
-        print(f"{header} Optimal solution: {function.global_optimum()}")
-        print(f"{header} Distance: {best_result - function.global_optimum()}")
-        print()
 
 
 def test_hill_climb(
@@ -297,28 +303,24 @@ def test_hill_climb_step(
             print()
 
 
-####
-# Main
-####
 def main():
     function_list: str = ", ".join([f.__name__ for f in OBJECTIVE_FUNCTIONS])
     parser = argparse.ArgumentParser(
         description=f"Run optimization algorithms over a collection of functions. "
                     f"{len(OBJECTIVE_FUNCTIONS)} functions are available: {function_list}."
     )
-
     parser.add_argument(
         "algorithm",
-        choices=("genetic", "sa", "test-sa", "hill-climbing", "hill-climbing-step"),
+        choices=("genetic", "sa", "hill-climbing", "og-sa", "test-sa", "hill-climbing-step"),
         type=str,
         help="Algorithm to run."
     )
     parser.add_argument(
         "--func", "-f",
-        choices=(range(0, 10)),
+        choices=(range(0, 9)),
         type=int,
         default=0,
-        help="Function to run."
+        help="Index of function to test."
     )
     parser.add_argument(
         "--cpu-cores", "-c",
@@ -352,31 +354,7 @@ def main():
         print()
 
     elif ALGORITHM == "sa":
-        # Default parameters
-        step_size: float = 1
-        min_temperature: float = 0.1
-        max_temperature: float = 100
-        cooling_rate: float = 0.99
-
-        # Simulated annealing
-        print(f"{'=' * 6} SIMULATED ANNEALING {'=' * 6}")
-
-        print(f"Running simulated annealing over {len(OBJECTIVE_FUNCTIONS)} functions ...")
-        print(f"Min temp: {min_temperature}, max temp: {max_temperature}, cooling rate: {cooling_rate}, "
-              f"step size: {step_size}")
-        print()
-
-        test_simulated_annealing(
-            number_of_runs_per_function=NUMBER_OF_RUNS,
-            concurrency=CPU_CORES,
-            step_size=step_size,
-            min_temperature=min_temperature,
-            max_temperature=max_temperature,
-            cooling_rate=cooling_rate
-        )
-
-        print(f"{'=' * 6}")
-        print()
+        test_simulated_annealing()
 
     elif ALGORITHM == "test-sa":
         # Default parameters
