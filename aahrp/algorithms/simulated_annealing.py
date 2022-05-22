@@ -42,6 +42,6 @@ def simulated_annealing(
 
         # Decrease temperature
         current_temp *= cooling_rate
-        iterations -= 1
+        iterations += 1
 
     return min_value, min_point
