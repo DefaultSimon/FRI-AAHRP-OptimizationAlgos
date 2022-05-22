@@ -34,6 +34,16 @@ def simulated_annealing(
     current_temp = max_temperature
     min_point = select_random_point(dimensions, bounds_lower, bounds_upper, Random())
     min_value = function(*min_point)
+
+    # Get 10 random neighbors and pick best one
+    for i in range(10):
+        better_neighbor = get_random_neighbor(min_point, bounds_lower, bounds_upper, step)
+        better_neighbor_value = function(*better_neighbor)
+
+        if better_neighbor_value < min_value:
+            min_point = better_neighbor
+            min_value = better_neighbor_value
+
     iterations = 0
 
     while current_temp > min_temperature and iterations < max_iterations:
@@ -43,7 +53,7 @@ def simulated_annealing(
         # Get 10 random neighbors and pick best one
         for i in range(10):
             better_neighbor = get_random_neighbor(min_point, bounds_lower, bounds_upper, step)
-            better_neighbor_value = function(*neighbor)
+            better_neighbor_value = function(*better_neighbor)
 
             if better_neighbor_value < neighbor_value:
                 neighbor = better_neighbor
