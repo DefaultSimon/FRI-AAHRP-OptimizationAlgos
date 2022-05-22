@@ -233,7 +233,7 @@ def test_simulated_annealing(output_file: str, function: int = None):
             print(f"{header} Best solution: {best_result[0]}")
             print(f"{header} Best solution vector: {best_result[1]}")
             print(f"{header} Optimal solution: {function.global_optimum()}")
-            print(f"{header} Distance: {best_result[0] - function.global_optimum()}")
+            print(f"{header} Distance: {abs(abs(function.global_optimum()) - abs(best_result[0]))}")
             print()
 
         print(f"{'=' * 6}")
@@ -264,7 +264,7 @@ def test_simulated_annealing(output_file: str, function: int = None):
         print(f"Best solution: {best_result[0]}")
         print(f"Best solution vector: {best_result[1]}")
         print(f"Optimal solution: {function.global_optimum()}")
-        print(f"Distance: {best_result[0] - function.global_optimum()}")
+        print(f"Distance: {abs(abs(function.global_optimum()) - abs(best_result[0]))}")
         print(f"{'=' * 6}")
         print()
 
@@ -329,7 +329,7 @@ def test_hill_climb(
             print(f"{header} Best solution: {best_result[0]}")
             print(f"{header} Best solution vector: {best_result[1]}")
             print(f"{header} Optimal solution: {function.global_optimum()}")
-            print(f"{header} Distance: {best_result[0] - function.global_optimum()}")
+            print(f"{header} Distance: {abs(abs(function.global_optimum()) - abs(best_result[0]))}")
             print()
     else:
         function = OBJECTIVE_FUNCTIONS[function]
