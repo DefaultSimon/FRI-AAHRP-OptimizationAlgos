@@ -99,7 +99,7 @@ def run_genetic_algorithm(
         function: Type[Function],
         number_of_runs: int = len(SEEDS),
         concurrency: int = multiprocessing.cpu_count()
-) -> float:
+) -> Tuple[float, List[float]]:
     if number_of_runs > len(SEEDS):
         raise KeyError(f"Not enough pre-generated seeds for {number_of_runs} runs, "
                        f"generate some more at the top of the script.")
@@ -110,14 +110,15 @@ def run_genetic_algorithm(
         for index in range(number_of_runs)
     ]
 
-    solutions: List[float] = run_concurrently(
+    solutions: List[Tuple[float, List[float]]] = run_concurrently(
         function=genetic_algorithm,
         list_of_argument_tuples=concurrency_arguments,
         concurrency=concurrency,
         chunk_size=2
     )
 
-    return min(solutions)
+    best_solution_value, best_solution_point = min(solutions, key=lambda e: e[0])
+    return best_solution_value, best_solution_point
 
 
 def test_genetic(
@@ -130,16 +131,17 @@ def test_genetic(
 
         timer: Timer = Timer()
         with timer:
-            best_result: float = run_genetic_algorithm(
+            best_result_value, best_result_point = run_genetic_algorithm(
                 function,
                 number_of_runs=number_of_runs_per_function,
                 concurrency=concurrency,
             )
 
         print(f"{header} Time to best solution: {round(timer.get_delta(), 2)} seconds.")
-        print(f"{header} Best solution: {best_result}")
+        print(f"{header} Best solution: {best_result_value}\n"
+              f"{len(header) * ' '} Point at best solution: {best_result_point}")
         print(f"{header} Optimal solution: {function.global_optimum()}")
-        print(f"{header} Distance: {best_result - function.global_optimum()}")
+        print(f"{header} Distance: {best_result_value - function.global_optimum()}")
         print()
 
 

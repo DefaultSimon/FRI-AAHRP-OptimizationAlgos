@@ -15,8 +15,9 @@ def genetic_algorithm(
         parents_selected: int = 25,
         random_parent_probability: float = 0.05,
         crossover_probability: float = 0.9,
-        mutation_probability: float = 0.05
-) -> float:
+        mutation_probability: float = 0.05,
+        max_generations_since_last_improvement: int = 1000
+) -> Tuple[float, List[float]]:
     # Independent random generator seeded with the seed parameter.
     random: Random = Random(seed)
 
@@ -72,6 +73,8 @@ def genetic_algorithm(
     ]
 
     best_score_value: float = function(*current_population[0])
+    best_score_point: List[float] = current_population[0]
+    best_score_generation_index: int = -1
 
     for generation_index in range(max_generations):
         # Calculate values of each individual in current population.
@@ -85,6 +88,8 @@ def genetic_algorithm(
 
         if score_value < best_score_value:
             best_score_value = score_value
+            best_score_point = score_candidate
+            best_score_generation_index = generation_index
 
         # Select parents and generate next generation using them (crossover).
         parents: List[List[float]] = select_parents(current_population, population_scores, parents_selected)
@@ -99,5 +104,7 @@ def genetic_algorithm(
 
         current_population = new_population
 
-    return best_score_value
+        if generation_index - best_score_generation_index > max_generations_since_last_improvement:
+            break
 
+    return best_score_value, best_score_point
