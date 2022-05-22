@@ -1,5 +1,5 @@
 from random import Random
-from typing import List, Callable
+from typing import List, Callable, Tuple
 
 from aahrp.utilities import select_random_point, get_neighbors
 
@@ -12,7 +12,7 @@ def hill_climbing_algorithm(
         max_iterations: int = 1000,
         seed: float = -1,
         step: float = 1
-) -> float:
+) -> Tuple[float, List[float]]:
     # Initialize value with seed if provided
     random: Random
     if seed == -1:
@@ -20,16 +20,13 @@ def hill_climbing_algorithm(
     else:
         random = Random(seed)
 
-    min_node = select_random_point(dimensions, bounds_lower, bounds_upper, random)
-    min_val = function(*min_node)
+    min_point = select_random_point(dimensions, bounds_lower, bounds_upper, random)
+    min_val = function(*min_point)
     prev_node = None
     sideways_moves = 0
 
     for i in range(max_iterations):
-        neighbors = get_neighbors(min_node, bounds_lower, bounds_upper, step)
-
-        next_node: List[float] = []
-        next_val: float = min_val
+        neighbors = get_neighbors(min_point, bounds_lower, bounds_upper, step)
 
         # Select best neighbor
         for neighbor in neighbors:
@@ -39,22 +36,22 @@ def hill_climbing_algorithm(
 
             neighbor_val = function(*neighbor)
 
-            if neighbor_val < next_val:
-                next_node = neighbor
-                next_val = neighbor_val
+            if neighbor_val < min_val:
+                min_point = neighbor
+                min_val = neighbor_val
 
         # If neighbor is better than current, set it as the best node
-        if next_val <= min_val and sideways_moves < 50:
+        if min_val <= min_val and sideways_moves < 50:
             # If moving sideways, increment sideways_moves
-            if next_val < min_val:
+            if min_val < min_val:
                 sideways_moves = 0
             else:
                 sideways_moves += 1
 
-            prev_node = min_node
-            min_node = next_node
-            min_val = next_val
+            prev_node = min_point
+            min_point = min_point
+            min_val = min_val
         else:
-            return min_val
+            return min_val, min_point
 
-    return min_val
+    return min_val, min_point

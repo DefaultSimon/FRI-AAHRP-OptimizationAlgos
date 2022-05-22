@@ -237,33 +237,38 @@ def run_hill_climb_algorithm(
         function: Type[Function],
         num_runs: int = 1,
         concurrency: int = multiprocessing.cpu_count(),
-        step_size: int = 1
-) -> float:
+        step_size: int = 1,
+        max_iterations: int = 1000
+) -> Tuple[float, List[float]]:
     concurrency_arguments: List[Tuple[Any, ...]] = [
         (
             function.function,
             function.dimensions(),
             function.bounds_lower(),
             function.bounds_upper(),
+            max_iterations,
             SEEDS[index],
             step_size
         )
         for index in range(num_runs)
     ]
 
-    solutions: List[float] = run_concurrently(
+    solutions: List[Tuple[float, List[float]]] = run_concurrently(
         function=hill_climbing_algorithm,
         list_of_argument_tuples=concurrency_arguments,
         concurrency=concurrency,
         chunk_size=2
     )
 
-    return min(solutions)
+    # Return solution with minimal min_value (i.e. best solution)
+    return min(solutions, key=lambda solution: solution[0])
 
 
 def test_hill_climb(
+        output_file: str,
         num_runs_per_function: int = len(SEEDS),
         concurrency: int = multiprocessing.cpu_count()
+
 ):
     for index, function in enumerate(OBJECTIVE_FUNCTIONS):
         header: str = f"[{function.__name__} | {index + 1:2d} of {len(OBJECTIVE_FUNCTIONS):2d}]"
@@ -271,42 +276,22 @@ def test_hill_climb(
 
         timer: Timer = Timer()
         with timer:
-            best_result: float = run_hill_climb_algorithm(
+            best_result: Tuple[float, List[float]] = run_hill_climb_algorithm(
                 function,
                 num_runs=num_runs_per_function,
-                concurrency=concurrency
+                concurrency=concurrency,
             )
 
+            # Append tab separated list from result tuple to file
+            with open(output_file, "a") as file:
+                file.write("\t".join(map(str, best_result[1])) + "\n")
+
         print(f"{header} Time to best solution: {round(timer.get_delta(), 2)} seconds.")
-        print(f"{header} Best solution: {best_result}")
+        print(f"{header} Best solution: {best_result[0]}")
+        print(f"{header} Best solution vector: {best_result[1]}")
         print(f"{header} Optimal solution: {function.global_optimum()}")
-        print(f"{header} Distance: {best_result - function.global_optimum()}")
+        print(f"{header} Distance: {best_result[0] - function.global_optimum()}")
         print()
-
-
-def test_hill_climb_step(
-        concurrency: int = multiprocessing.cpu_count()
-):
-    for i in [1, 2, 5, 10, 50, 100, 500, 1000]:
-        print(f"Step size is {i}")
-        for index, function in enumerate(OBJECTIVE_FUNCTIONS):
-            header: str = f"[{function.__name__} | {index + 1:2d} of {len(OBJECTIVE_FUNCTIONS):2d}]"
-            print(f"{header} Running hill climb algorithm ...")
-
-            timer: Timer = Timer()
-            with timer:
-                best_result: float = run_hill_climb_algorithm(
-                    function,
-                    num_runs=1,
-                    concurrency=concurrency,
-                    step_size=i
-                )
-
-            print(f"{header} Time to best solution: {round(timer.get_delta(), 2)} seconds.")
-            print(f"{header} Best solution: {best_result}")
-            print(f"{header} Optimal solution: {function.global_optimum()}")
-            print(f"{header} Distance: {best_result - function.global_optimum()}")
-            print()
 
 
 def main():
@@ -407,20 +392,8 @@ def main():
         print()
 
         test_hill_climb(
+            output_file=args.output,
             num_runs_per_function=NUMBER_OF_RUNS,
-            concurrency=CPU_CORES
-        )
-
-        print(f"{'=' * 6}")
-        print()
-    elif ALGORITHM == "hill-climbing-step":
-        # Hill climbing (test step size)
-        print(f"{'=' * 6} HILL CLIMBING BESTSTEP SIZE {'=' * 6}")
-
-        print(f"Running hill climbing algorithm over {len(OBJECTIVE_FUNCTIONS)} functions ...")
-        print()
-
-        test_hill_climb_step(
             concurrency=CPU_CORES
         )
 
