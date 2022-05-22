@@ -366,7 +366,7 @@ def main():
     )
     parser.add_argument(
         "--func", "-f",
-        choices=(range(0, 9)),
+        choices=(range(0, 10)),
         type=int,
         help="Index of function to test."
     )
