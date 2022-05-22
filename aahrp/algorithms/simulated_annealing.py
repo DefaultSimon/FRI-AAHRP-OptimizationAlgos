@@ -36,7 +36,7 @@ def simulated_annealing(
     min_value = function(*min_point)
 
     # Get 10 random neighbors and pick best one
-    for i in range(1000):
+    for i in range(10):
         better_neighbor = get_random_neighbor(min_point, bounds_lower, bounds_upper, step)
         better_neighbor_value = function(*better_neighbor)
 
@@ -51,8 +51,8 @@ def simulated_annealing(
         neighbor_value = function(*neighbor)
 
         # Get 10 random neighbors and pick best one
-        for i in range(1000):
-            better_neighbor = get_random_neighbor(min_point, bounds_lower, bounds_upper, step)
+        for i in range(10):
+            better_neighbor = get_random_neighbor(neighbor, bounds_lower, bounds_upper, step)
             better_neighbor_value = function(*better_neighbor)
 
             if better_neighbor_value < neighbor_value:
