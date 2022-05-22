@@ -22,16 +22,21 @@ def simulated_annealing(
     min_point = select_random_point(dimensions, bounds_lower, bounds_upper, Random())
     min_value = function(*min_point)
     iterations = 0
+    print("Random point:", min_point)
+    print("Value:", min_value)
+    print(f"Temperature: {current_temp}, max_temperature: {max_temperature}, min_temperature: {min_temperature}, cooling_rate: {cooling_rate}, step: {step}")
 
     while current_temp > min_temperature and iterations < max_iterations:
         neighbors = get_neighbors(min_point, bounds_lower, bounds_upper, step)
         neighbor = random.choice(neighbors)
         neighbor_value = function(*neighbor)
+        print(f"neighbors: {neighbors}, neighbor: {neighbor}, neighbor_value: {neighbor_value}")
 
         if neighbor_value < min_value:
             # If neighbor is better, move to it
             min_point = neighbor
             min_value = neighbor_value
+            print(f"New min_point: {min_point}, min_value: {min_value}")
         else:
             # If neighbor is worse, move to it with probability based on temperature
             #probability = math.exp(-abs(neighbor_value - min_value) / current_temp)
@@ -43,8 +48,12 @@ def simulated_annealing(
                 min_point = neighbor
                 min_value = neighbor_value
 
+            print(f"diff: {diff}, probability: {probability}, new min_point: {min_point}, min_value: {min_value}")
+
         # Decrease temperature
         current_temp *= cooling_rate
         iterations += 1
+        print(f"current_temp: {current_temp}, iterations: {iterations}")
 
+    print(f"Final min_point: {min_point}, min_value: {min_value}")
     return min_value, min_point
