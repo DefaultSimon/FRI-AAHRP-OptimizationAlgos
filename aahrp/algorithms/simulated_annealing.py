@@ -13,15 +13,16 @@ def simulated_annealing(
         bounds_upper: List[float],
         seed: float = -1,
         step: float = 1,
-        temperature: float = 100  # Based on best temperature from Assignment 4
+        min_temperature: float = 0.001,
+        max_temperature: float = 100,  # Based on best temperature from Assignment 4
+        cooling_rate: float = 0.95
 ) -> float:
     # Set initial values
-    min_temp = 0.1
-    current_temp = temperature
+    current_temp = max_temperature
     min_point = select_random_point(dimensions, bounds_lower, bounds_upper, Random(seed))
     min_value = function(*min_point)
 
-    while current_temp > min_temp:
+    while current_temp > min_temperature:
         neighbors = get_neighbors(min_point, bounds_lower, bounds_upper, step)
         neighbor = random.choice(neighbors)
         neighbor_value = function(*neighbor)
@@ -39,6 +40,6 @@ def simulated_annealing(
                 min_value = neighbor_value
 
         # Decrease temperature
-        current_temp *= 0.99
+        current_temp *= cooling_rate
 
     return min_value

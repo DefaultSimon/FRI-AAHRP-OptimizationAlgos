@@ -130,13 +130,11 @@ def run_simulated_annealing(
         function: Type[Function],
         number_of_runs: int = len(SEEDS),
         concurrency: int = multiprocessing.cpu_count(),
-        step_size: int = 1,
-        temperature: int = 100
+        step_size: float = 1,
+        min_temperature: float = 0.1,
+        max_temperature: float = 100,
+        cooling_rate: float = 0.99,
 ) -> float:
-    if number_of_runs > len(SEEDS):
-        raise KeyError(f"Not enough pre-generated seeds for {number_of_runs} runs, "
-                       f"generate some more at the top of the script.")
-
     concurrency: int = min(concurrency, number_of_runs)
     concurrency_arguments: List[Tuple[Any, ...]] = [
         (
@@ -146,7 +144,9 @@ def run_simulated_annealing(
             function.bounds_upper(),
             SEEDS[index],
             step_size,
-            temperature
+            min_temperature,
+            max_temperature,
+            cooling_rate
         )
         for index in range(number_of_runs)
     ]
@@ -221,6 +221,10 @@ def test_genetic(
 def test_simulated_annealing(
         number_of_runs_per_function: int,
         concurrency: int,
+        step_size: float = 1,
+        min_temperature: float = 0.1,
+        max_temperature: float = 100,
+        cooling_rate: float = 0.99,
 ):
     for index, function in enumerate(OBJECTIVE_FUNCTIONS):
         header: str = f"[{function.__name__.ljust(15)}|{index + 1:2d} of {len(OBJECTIVE_FUNCTIONS):2d}]"
@@ -232,6 +236,10 @@ def test_simulated_annealing(
                 function,
                 number_of_runs=number_of_runs_per_function,
                 concurrency=concurrency,
+                step_size=step_size,
+                min_temperature=min_temperature,
+                max_temperature=max_temperature,
+                cooling_rate=cooling_rate
             )
 
         print(f"{header} Time to best solution: {round(timer.get_delta(), 2)} seconds.")
@@ -333,15 +341,27 @@ def main():
         print()
 
     elif ALGORITHM == "sa":
+        # Default parameters
+        step_size: float = 1
+        min_temperature: float = 0.1
+        max_temperature: float = 100
+        cooling_rate: float = 0.99
+
         # Simulated annealing
         print(f"{'=' * 6} SIMULATED ANNEALING {'=' * 6}")
 
         print(f"Running simulated annealing over {len(OBJECTIVE_FUNCTIONS)} functions ...")
+        print(f"Min temp: {min_temperature}, max temp: {max_temperature}, cooling rate: {cooling_rate}, "
+              f"step size: {step_size}")
         print()
 
         test_simulated_annealing(
             number_of_runs_per_function=NUMBER_OF_RUNS,
             concurrency=CPU_CORES,
+            step_size=step_size,
+            min_temperature=min_temperature,
+            max_temperature=max_temperature,
+            cooling_rate=cooling_rate
         )
 
         print(f"{'=' * 6}")
